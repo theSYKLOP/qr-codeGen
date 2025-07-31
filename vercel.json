@@ -1,0 +1,14 @@
+{
+  "buildCommand": "prisma generate && prisma migrate deploy && nuxt build",
+  "devCommand": "nuxt dev",
+  "installCommand": "npm install",
+  "framework": "nuxt",
+  "functions": {
+    "server/api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "env": {
+    "DATABASE_URL": "@database_url"
+  }
+} 

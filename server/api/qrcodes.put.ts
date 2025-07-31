@@ -65,6 +65,7 @@ export default defineEventHandler(async (event) => {
         poids: parseFloat(body.poids),
         unitePoids: body.unitePoids,
         fournisseur: body.fournisseur || 'Non spécifié',
+        qrType: body.qrType || existingQrCode.qrType,
         codePng: body.codePng || existingQrCode.codePng
       },
       include: {

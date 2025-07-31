@@ -28,8 +28,14 @@
       </select>
     </div>
 
+    <!-- Loader de chargement -->
+    <div v-if="isLoading" class="loading-section">
+      <div class="loading-spinner-large"></div>
+      <p class="loading-text">Chargement des QR codes...</p>
+    </div>
+
     <!-- Liste des QR codes -->
-    <div class="qr-list-container">
+    <div v-else class="qr-list-container">
       <!-- État vide -->
       <div v-if="filteredQrCodes.length === 0" class="empty-state">
         <FontAwesomeIcon icon="fa-qrcode" class="empty-icon" />
@@ -46,7 +52,12 @@
       >
         <div class="qr-card-content">
           <div class="qr-card-header">
-            <span class="qr-badge">{{ qr.typeProduit }}</span>
+            <div class="qr-badges">
+              <span class="qr-badge">{{ qr.typeProduit }}</span>
+              <span class="qr-badge qr-badge--type" :class="getQrTypeClass(qr.qrType)">
+                {{ getQrTypeLabel(qr.qrType) }}
+              </span>
+            </div>
             <span class="qr-date">{{ formatDate(qr.dateCreation) }}</span>
           </div>
           
@@ -90,7 +101,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="pagination-section" v-if="pagination && pagination.totalPages > 1">
+    <div class="pagination-section" v-if="pagination && pagination.totalPages > 1 && !isLoading">
       <div class="pagination-info">
         <span class="pagination-text">
           Page {{ pagination.page }} sur {{ pagination.totalPages }}
@@ -135,7 +146,7 @@
     </div>
 
     <!-- Bouton rafraîchir -->
-    <div class="refresh-section">
+    <div class="refresh-section" v-if="!isLoading">
       <button 
         class="btn btn--outline btn--block"
         @click="$emit('refresh-list')"
@@ -249,6 +260,16 @@
                 <FontAwesomeIcon icon="fa-edit" class="btn-icon" />
                 Modifier
               </button>
+              
+              <button 
+                class="btn btn--danger"
+                @click="deleteQrCode(selectedQr)"
+                :disabled="isDeleting"
+              >
+                <FontAwesomeIcon v-if="!isDeleting" icon="fa-trash" class="btn-icon" />
+                <div v-if="isDeleting" class="loading-spinner"></div>
+                {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
+              </button>
             </div>
           </div>
         </div>
@@ -269,6 +290,10 @@ const props = defineProps({
   pagination: {
     type: Object,
     default: null
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -280,6 +305,7 @@ const searchTerm = ref('')
 const filterType = ref('')
 const showDetailModal = ref(false)
 const selectedQr = ref(null)
+const isDeleting = ref(false)
 
 // Options de filtre des types
 const typeOptions = computed(() => {
@@ -330,6 +356,44 @@ const editQrCode = (qr) => {
   emit('edit-qr-code', qr)
 }
 
+// Supprimer un QR code
+const deleteQrCode = async (qr) => {
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer le QR code "${qr.nomProduit}" ?`)) {
+    return
+  }
+
+  try {
+    isDeleting.value = true
+    
+    const response = await $fetch(`/api/qrcodes?id=${qr.id}`, {
+      method: 'DELETE'
+    })
+    
+    if (response.success) {
+      showDetailModal.value = false
+      emit('refresh-list')
+      showNotification('QR Code supprimé avec succès !', 'success')
+    }
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
+    showNotification('Erreur lors de la suppression du QR code', 'error')
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+// Afficher une notification
+const showNotification = (message, type = 'info') => {
+  const notification = document.createElement('div')
+  notification.className = `notification notification--${type}`
+  notification.textContent = message
+  document.body.appendChild(notification)
+  
+  setTimeout(() => {
+    notification.remove()
+  }, 3000)
+}
+
 // Formater la date
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -339,6 +403,30 @@ const formatDate = (dateString) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// Obtenir le label du type de QR code
+const getQrTypeLabel = (qrType) => {
+  switch (qrType) {
+    case 'raw':
+      return 'Brut'
+    case 'result':
+      return 'Résultat'
+    default:
+      return 'Brut'
+  }
+}
+
+// Obtenir la classe CSS du type de QR code
+const getQrTypeClass = (qrType) => {
+  switch (qrType) {
+    case 'raw':
+      return 'qr-badge--raw'
+    case 'result':
+      return 'qr-badge--result'
+    default:
+      return 'qr-badge--raw'
+  }
 }
 
 // Changer de page
@@ -445,6 +533,74 @@ const visiblePages = computed(() => {
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== LOADING SECTION ===== */
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  flex: 1;
+}
+
+.loading-spinner-large {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+.loading-text {
+  font-size: var(--font-size-base);
+  color: var(--color-muted);
+  margin: 0;
+  font-weight: var(--font-weight-medium);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== LOADING SECTION ===== */
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  flex: 1;
+}
+
+.loading-spinner-large {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+.loading-text {
+  font-size: var(--font-size-base);
+  color: var(--color-muted);
+  margin: 0;
+  font-weight: var(--font-weight-medium);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ===== LIST CONTAINER ===== */
 .qr-list-container {
   flex: 1;
@@ -534,6 +690,12 @@ const visiblePages = computed(() => {
   margin-bottom: var(--space-3);
 }
 
+.qr-badges {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
 .qr-badge {
   background-color: var(--color-primary);
   color: var(--color-secondary);
@@ -543,6 +705,21 @@ const visiblePages = computed(() => {
   border-radius: var(--border-radius);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.qr-badge--type {
+  font-size: var(--font-size-xs);
+  padding: var(--space-1) var(--space-2);
+}
+
+.qr-badge--raw {
+  background-color: var(--color-muted);
+  color: var(--color-secondary);
+}
+
+.qr-badge--result {
+  background-color: var(--color-success);
+  color: var(--color-secondary);
 }
 
 .qr-date {
@@ -742,6 +919,19 @@ const visiblePages = computed(() => {
   background-color: var(--color-light);
 }
 
+.btn--danger {
+  background-color: var(--color-error);
+  color: var(--color-secondary);
+  border-color: var(--color-error);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
 .btn--small {
   padding: var(--space-2);
   min-height: 32px;
@@ -904,6 +1094,50 @@ const visiblePages = computed(() => {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ===== LOADING SPINNER ===== */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== NOTIFICATIONS ===== */
+.notification {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-tooltip);
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification--success {
+  background-color: var(--color-success);
+}
+
+.notification--error {
+  background-color: var(--color-error);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* ===== RESPONSIVE ===== */

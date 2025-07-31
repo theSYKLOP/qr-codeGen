@@ -95,6 +95,29 @@
         />
       </div>
 
+      <!-- Type de QR Code -->
+      <div class="form-group">
+        <label class="form-label required">Type de QR Code</label>
+        <select 
+          v-model="formData.qrType"
+          class="form-select"
+          required
+        >
+          <option value="">Sélectionnez un type</option>
+          <option 
+            v-for="type in qrTypes" 
+            :key="type.value"
+            :value="type.value"
+          >
+            {{ type.label }}
+          </option>
+        </select>
+        <p class="form-help">
+          <FontAwesomeIcon :icon="['fas', 'info-circle']" />
+          {{ getQrTypeDescription() }}
+        </p>
+      </div>
+
       <!-- Nom de l'utilisateur -->
       <div class="form-group">
         <label class="form-label required">Votre nom</label>
@@ -243,6 +266,11 @@ const unitesPoids = [
   { label: 'kg', value: 'kg' }
 ]
 
+const qrTypes = [
+  { label: 'Données brutes (URL)', value: 'raw' },
+  { label: 'Page de résultat (URL)', value: 'result' }
+]
+
 // Données du formulaire
 const formData = reactive({
   typeProduit: '',
@@ -252,7 +280,8 @@ const formData = reactive({
   poids: '',
   unitePoids: 'g',
   fournisseur: 'PROXI NOVA',
-  auteur: ''
+  auteur: '',
+  qrType: 'raw' // Ajout du type de QR code
 })
 
 // Initialiser le formulaire en mode édition
@@ -267,7 +296,8 @@ const initializeEditMode = () => {
       poids: props.qrCodeToEdit.poids.toString(),
       unitePoids: props.qrCodeToEdit.unitePoids,
       fournisseur: props.qrCodeToEdit.fournisseur,
-      auteur: props.qrCodeToEdit.user?.nom || 'Utilisateur'
+      auteur: props.qrCodeToEdit.user?.nom || 'Utilisateur',
+      qrType: props.qrCodeToEdit.qrType || 'raw' // Initialiser le type de QR code
     }
     console.log('Setting form data:', qrData)
     Object.assign(formData, qrData)
@@ -302,7 +332,8 @@ const resetForm = () => {
     poids: '',
     unitePoids: 'g',
     fournisseur: 'PROXI NOVA',
-    auteur: ''
+    auteur: '',
+    qrType: 'raw'
   })
 }
 
@@ -322,7 +353,18 @@ const generateQr = async () => {
       date: new Date().toLocaleDateString('fr-FR')
     }
     
-    generatedQrCode.value = await QRCode.toDataURL(JSON.stringify(qrData), {
+    const baseUrl = window.location.origin
+    let qrContent
+
+    if (formData.qrType === 'raw') {
+      // Données brutes JSON
+      qrContent = JSON.stringify(qrData)
+    } else {
+      // URL vers la page de résultat
+      qrContent = `${baseUrl}/resultat?data=${encodeURIComponent(JSON.stringify(qrData))}`
+    }
+    
+    generatedQrCode.value = await QRCode.toDataURL(qrContent, {
       width: 300,
       margin: 2,
       color: {
@@ -363,7 +405,8 @@ const saveQrToDatabase = async () => {
       unitePoids: formData.unitePoids,
       fournisseur: formData.fournisseur,
       auteur: formData.auteur,
-      codePng: generatedQrCode.value
+      codePng: generatedQrCode.value,
+      qrType: formData.qrType
     }
     
     let response
@@ -394,6 +437,15 @@ const saveQrToDatabase = async () => {
     alert('Impossible de sauvegarder le QR code')
   } finally {
     isSaving.value = false
+  }
+}
+
+// Description du type de QR code
+const getQrTypeDescription = () => {
+  if (formData.qrType === 'raw') {
+    return 'Affiche les données brutes (URL) directement sur le QR Code.'
+  } else {
+    return 'Affiche une page de résultat qui contient les données du QR Code.'
   }
 }
 </script>
@@ -451,6 +503,21 @@ const saveQrToDatabase = async () => {
 .form-select--small {
   width: 80px;
   padding: var(--space-3) var(--space-2);
+}
+
+.form-help {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin: var(--space-2) 0 0 0;
+  line-height: 1.4;
+}
+
+.form-help svg {
+  flex-shrink: 0;
+  opacity: 0.7;
 }
 
 /* ===== INPUT GROUP ===== */

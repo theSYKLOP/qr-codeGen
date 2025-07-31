@@ -9,7 +9,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
-    '@nuxt/icon'
+    '@nuxt/icon',
+    '@prisma/nuxt'
   ],
 
   // Configuration des auto-imports
@@ -23,6 +24,22 @@ export default defineNuxtConfig({
 
   // Configuration Nitro
   nitro: {
-    preset: process.env.NODE_ENV === 'production' ? 'vercel' : undefined
+    preset: 'vercel'
+  },
+
+  // Configuration Prisma
+  prisma: {
+    clientOptions: {
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL
+        }
+      }
+    }
+  },
+
+  // Variables d'environnement
+  runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL
   }
 })

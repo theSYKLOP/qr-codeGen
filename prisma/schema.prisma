@@ -38,6 +38,7 @@ model QrCode {
   poids        Float
   unitePoids   String   // "g" ou "kg"
   fournisseur  String
+  qrType       String   @default("raw") // "raw" ou "result"
   codePng      String   // QR code en base64 ou URL
   dateCreation DateTime @default(now())
   

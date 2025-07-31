@@ -10,7 +10,7 @@
             Créez vos Codes QR
           </h1>
           <p class="page-header__description">
-            Interface épurée et moderne pour générer et gérer vos codes QR facilement
+            Interface pour gérer vos codes QR facilement
           </p>
         </div>
       </div>
@@ -71,6 +71,7 @@
               <QrList 
                 :qr-codes="qrCodes" 
                 :pagination="pagination"
+                :is-loading="loading"
                 @refresh-list="() => fetchQrCodes(1)"
                 @edit-qr-code="handleEditQrCode"
                 @change-page="handleChangePage"

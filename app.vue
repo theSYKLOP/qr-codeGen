@@ -10,17 +10,17 @@
               <FontAwesomeIcon :icon="['fas', 'qrcode']" size="lg" />
             </div>
             <div class="header__text">
-              <h1 class="header__title">Générateur QR</h1>
-              <p class="header__subtitle">Interface épurée 2025</p>
+              <h1 class="header__title">Générateur QR 241</h1>
+              <p class="header__subtitle">Interface pour gérer vos codes QR facilement</p>
             </div>
           </div>
           
-          <nav class="header__nav">
+          <!-- <nav class="header__nav">
             <button class="btn btn--ghost btn--sm" type="button">
               <FontAwesomeIcon :icon="['fas', 'cogs']" />
               Paramètres
             </button>
-          </nav>
+          </nav> -->
         </div>
       </div>
     </header>
@@ -35,7 +35,7 @@
       <div class="container">
         <div class="footer__content">
           <p class="footer__text">
-            © 2025 Générateur QR - Design Épuré
+            © 2025 Générateur QR - Design by Mehdi OYONE
           </p>
           <div class="footer__links">
             <a href="#" class="footer__link">Aide</a>

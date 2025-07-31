@@ -28,12 +28,15 @@ import {
   faSave,
   faTrash,
   faCog,
+  faCogs,
   faInfoCircle,
   faExclamationTriangle,
   faCheckCircle,
   faTimesCircle,
   faList,
-  faCogs
+  faBox,
+  faTruck,
+  faShare
 } from '@fortawesome/free-solid-svg-icons'
 
 // Import des icônes regular
@@ -76,6 +79,9 @@ library.add(
   faCheckCircle,
   faTimesCircle,
   faList,
+  faBox,
+  faTruck,
+  faShare,
   
   // Regular icons
   farUser,

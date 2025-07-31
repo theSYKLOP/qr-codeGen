@@ -2,12 +2,22 @@
   "name": "nuxt-app",
   "private": true,
   "type": "module",
+  "version": "1.0.0",
+  "description": "Interface pour générer et gérer vos codes QR facilement",
+  "author": "Mehdi OYONE",
+  "license": "MIT",
+  "homepage": "https://github.com/mehdi-oyone/qr-generator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mehdi-oyone/qr-generator.git"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "vercel-build": "node scripts/deploy.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
