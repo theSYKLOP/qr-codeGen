@@ -1,8 +1,12 @@
 {
-  "framework": "nuxt",
-  "buildCommand": "npm run build:vercel",
-  "devCommand": "nuxt dev",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
+  "framework": "nuxtjs",
+  "env": {
+    "PRISMA_CLI_BINARY_TARGETS": "rhel-openssl-3.0.x",
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  "regions": ["iad1"],
   "functions": {
     "server/api/**/*.ts": {
       "runtime": "nodejs18.x"
@@ -15,12 +19,5 @@
     "env": {
       "DATABASE_URL": "@database_url"
     }
-  },
-  "regions": ["iad1"],
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ]
+  }
 } 

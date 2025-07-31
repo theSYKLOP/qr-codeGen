@@ -1,16 +1,18 @@
 // nuxt.config.ts
 import { defineNuxtConfig } from 'nuxt/config'
+import { createResolver } from '@nuxt/kit'
+
+const { resolve } = createResolver(import.meta.url)
 
 export default defineNuxtConfig({
-  // Configuration Nuxt
-  devtools: { enabled: false },
-
-  // Modules
+  compatibilityDate: '2024-11-29',
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
+  
   modules: [
+    '@prisma/nuxt',
     '@nuxt/eslint',
     '@nuxt/fonts',
-    '@nuxt/icon',
-    '@prisma/nuxt'
+    '@nuxt/icon'
   ],
 
   // Configuration des auto-imports
@@ -18,36 +20,42 @@ export default defineNuxtConfig({
     dirs: [
       '~/components'
     ],
-    // Forcer l'auto-import des composants
     global: true
-  },
-
-  // Configuration Nitro
-  nitro: {
-    preset: 'vercel',
-    prerender: {
-      crawlLinks: false
-    },
-    experimental: {
-      wasm: false
-    }
   },
 
   // Variables d'environnement
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL
+    databaseUrl: process.env.DATABASE_URL,
+    public: {}
   },
 
-  // Configuration pour le build
-  ssr: true,
-
-  // Configuration pour Vercel
-  experimental: {
-    payloadExtraction: false
+  // 🔥 CONFIGURATION NITRO OPTIMISÉE
+  nitro: {
+    preset: process.env.NODE_ENV === 'production' ? 'vercel' : undefined,
+    experimental: {
+      wasm: true
+    }
   },
 
-  // Configuration des imports
-  imports: {
-    autoImport: true
+  // 🔥 BUILD SIMPLIFIÉ
+  build: {
+    transpile: ['@nuxt/ui']  // ✅ SUPPRIMÉ : '@prisma/client' (géré par le module)
+  },
+
+  // 🔥 CONFIGURATION VITE AVEC ALIAS OFFICIEL
+  vite: {
+    css: {
+      devSourcemap: false
+    },
+    build: {
+      sourcemap: false
+    },
+    resolve: {
+      alias: {
+        // ✅ ALIAS OFFICIEL PRISMA : chemin ABSOLU obligatoire
+        '.prisma/client/index-browser': resolve('./node_modules/.prisma/client/index-browser.js')
+      }
+    }
+    // ✅ SUPPRIMÉ : optimizeDeps et rollupOptions (géré par le module)
   }
 })
