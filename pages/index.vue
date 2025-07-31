@@ -23,11 +23,7 @@
             <div class="card__header">
               <div class="card-header">
                 <div class="card-header__icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-plus" />
                 </div>
                 <div class="card-header__text">
                   <h2 class="card__title">{{ editMode ? 'Modifier Code QR' : 'Nouveau Code QR' }}</h2>
@@ -49,9 +45,7 @@
                   class="btn btn--outline btn--block"
                   @click="exitEditMode"
                 >
-                  <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-times" class="btn-icon" />
                   Annuler la modification
                 </button>
               </div>
@@ -65,9 +59,7 @@
             <div class="card__header">
               <div class="card-header">
                 <div class="card-header__icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-list" />
                 </div>
                 <div class="card-header__text">
                   <h2 class="card__title">Historique</h2>
@@ -93,9 +85,7 @@
         <div class="stats-grid">
           <div class="stat-card" v-for="stat in stats" :key="stat.label">
             <div class="stat-card__icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path :d="stat.iconPath"/>
-              </svg>
+              <FontAwesomeIcon :icon="stat.icon" />
             </div>
             <div class="stat-card__content">
               <div class="stat-card__value">{{ stat.value }}</div>
@@ -132,17 +122,17 @@ const stats = computed(() => [
   {
     label: 'Codes Créés',
     value: qrCodes.value.length,
-    iconPath: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm11 1h2v2h-2zm0 3h2v2h-2zm3-3h2v2h-2zm0 3h2v2h-2z'
+    icon: 'fa-qrcode'
   },
   {
     label: 'Types Produits',
     value: new Set(qrCodes.value.map(qr => qr.typeProduit)).size,
-    iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'
+    icon: 'fa-tag'
   },
   {
     label: 'Valeur Totale',
     value: `${qrCodes.value.reduce((sum, qr) => sum + (qr.prixVente || 0), 0).toLocaleString()} FCFA`,
-    iconPath: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'
+    icon: 'fa-dollar-sign'
   }
 ])
 

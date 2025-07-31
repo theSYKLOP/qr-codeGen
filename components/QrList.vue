@@ -4,9 +4,7 @@
     <!-- Recherche et filtres -->
     <div class="search-section">
       <div class="search-input-group">
-        <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
+        <FontAwesomeIcon icon="fa-search" class="search-icon" />
         <input 
           v-model="searchTerm"
           type="text"
@@ -34,9 +32,7 @@
     <div class="qr-list-container">
       <!-- État vide -->
       <div v-if="filteredQrCodes.length === 0" class="empty-state">
-        <svg class="empty-icon" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293L12 15.586a1 1 0 01-1.414 0L9.293 13.293A1 1 0 008.586 13H6"/>
-        </svg>
+        <FontAwesomeIcon icon="fa-qrcode" class="empty-icon" />
         <p class="empty-text">Aucun QR code trouvé</p>
         <p class="empty-subtext">Créez votre premier code QR !</p>
       </div>
@@ -60,23 +56,17 @@
               
               <div class="qr-details">
                 <div class="qr-detail-item">
-                  <svg class="detail-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-building" class="detail-icon" />
                   <span>{{ qr.franchise }}</span>
                 </div>
                 
                 <div class="qr-detail-row">
                   <div class="qr-detail-item price">
-                    <svg class="detail-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                    </svg>
+                    <FontAwesomeIcon icon="fa-dollar-sign" class="detail-icon" />
                     <span>{{ qr.prixVente }} FCFA</span>
                   </div>
                   <div class="qr-detail-item">
-                    <svg class="detail-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
-                    </svg>
+                    <FontAwesomeIcon icon="fa-weight-hanging" class="detail-icon" />
                     <span>{{ qr.poids }} {{ qr.unitePoids }}</span>
                   </div>
                 </div>
@@ -91,10 +81,7 @@
                 class="qr-mini"
               />
               <div class="qr-overlay">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
+                <FontAwesomeIcon icon="fa-eye" />
               </div>
             </div>
           </div>
@@ -119,9 +106,7 @@
           :disabled="!pagination.hasPrev"
           @click="changePage(pagination.page - 1)"
         >
-          <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
+          <FontAwesomeIcon icon="fa-chevron-left" class="btn-icon" />
           Précédent
         </button>
         
@@ -144,9 +129,7 @@
           @click="changePage(pagination.page + 1)"
         >
           Suivant
-          <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
+          <FontAwesomeIcon icon="fa-chevron-right" class="btn-icon" />
         </button>
       </div>
     </div>
@@ -157,9 +140,7 @@
         class="btn btn--outline btn--block"
         @click="$emit('refresh-list')"
       >
-        <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
+        <FontAwesomeIcon icon="fa-refresh" class="btn-icon" />
         Actualiser la liste
       </button>
     </div>
@@ -174,9 +155,7 @@
               class="btn btn--ghost btn--small"
               @click="showDetailModal = false"
             >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+              <FontAwesomeIcon icon="fa-times" />
             </button>
           </div>
 
@@ -194,9 +173,7 @@
             <div class="details-grid">
               <div class="detail-card">
                 <div class="detail-card-icon detail-card-icon--blue">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-tag" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Type</span>
@@ -206,9 +183,7 @@
 
               <div class="detail-card">
                 <div class="detail-card-icon detail-card-icon--purple">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-building" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Franchise</span>
@@ -218,9 +193,7 @@
 
               <div class="detail-card">
                 <div class="detail-card-icon detail-card-icon--green">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-dollar-sign" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Prix</span>
@@ -230,9 +203,7 @@
 
               <div class="detail-card">
                 <div class="detail-card-icon detail-card-icon--orange">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-weight-hanging" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Poids</span>
@@ -242,9 +213,7 @@
 
               <div class="detail-card">
                 <div class="detail-card-icon detail-card-icon--cyan">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-cog" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Fournisseur</span>
@@ -254,9 +223,7 @@
 
               <div class="detail-card">
                 <div class="detail-card-icon detail-card-icon--indigo">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                  </svg>
+                  <FontAwesomeIcon icon="fa-user" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Créé par</span>
@@ -271,9 +238,7 @@
                 class="btn btn--outline"
                 @click="downloadQrCode(selectedQr)"
               >
-                <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
+                <FontAwesomeIcon icon="fa-download" class="btn-icon" />
                 Télécharger HD
               </button>
               
@@ -281,9 +246,7 @@
                 class="btn btn--primary"
                 @click="editQrCode(selectedQr)"
               >
-                <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
+                <FontAwesomeIcon icon="fa-edit" class="btn-icon" />
                 Modifier
               </button>
             </div>
@@ -357,7 +320,7 @@ const showQrDetail = (qr) => {
 const downloadQrCode = (qr) => {
   const link = document.createElement('a')
   link.href = qr.codePng
-  link.download = `qr-${qr.nomProduit}.png`
+  link.download = `qr-${qr.nomProduit}-${qr.poids}${qr.unitePoids}-${qr.prixVente}FCFA.png`
   link.click()
 }
 
@@ -419,7 +382,7 @@ const visiblePages = computed(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 /* ===== SEARCH SECTION ===== */
@@ -440,6 +403,8 @@ const visiblePages = computed(() => {
   transform: translateY(-50%);
   color: var(--color-muted);
   pointer-events: none;
+  width: 20px;
+  height: 20px;
 }
 
 .search-input {
@@ -524,6 +489,8 @@ const visiblePages = computed(() => {
   color: var(--color-muted);
   opacity: 0.5;
   margin-bottom: var(--space-4);
+  width: 48px;
+  height: 48px;
 }
 
 .empty-text {
@@ -633,6 +600,8 @@ const visiblePages = computed(() => {
 .detail-icon {
   flex-shrink: 0;
   opacity: 0.7;
+  width: 16px;
+  height: 16px;
 }
 
 /* ===== QR PREVIEW ===== */
@@ -784,6 +753,8 @@ const visiblePages = computed(() => {
 
 .btn-icon {
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 /* ===== MODAL ===== */

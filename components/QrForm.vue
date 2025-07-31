@@ -115,9 +115,7 @@
           @click="resetForm"
           :disabled="isGenerating"
         >
-          <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
+          <FontAwesomeIcon icon="fa-refresh" class="btn-icon" />
           Réinitialiser
         </button>
         
@@ -126,9 +124,7 @@
           class="btn btn--primary"
           :disabled="isGenerating"
         >
-          <svg v-if="!isGenerating" class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01m-5.01 0h.01"/>
-          </svg>
+          <FontAwesomeIcon v-if="!isGenerating" icon="fa-qrcode" class="btn-icon" />
           <div v-if="isGenerating" class="loading-spinner"></div>
           {{ isGenerating ? 'Génération...' : (props.editMode ? 'Sauvegarder' : 'Générer QR Code') }}
         </button>
@@ -145,9 +141,7 @@
               class="btn btn--ghost btn--small"
               @click="showQrModal = false"
             >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+              <FontAwesomeIcon icon="fa-times" />
             </button>
           </div>
 
@@ -187,9 +181,7 @@
                 class="btn btn--secondary"
                 @click="downloadQr"
               >
-                <svg class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
+                <FontAwesomeIcon icon="fa-download" class="btn-icon" />
                 Télécharger PNG
               </button>
               
@@ -198,9 +190,7 @@
                 @click="saveQrToDatabase"
                 :disabled="isSaving"
               >
-                <svg v-if="!isSaving" class="btn-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
+                <FontAwesomeIcon v-if="!isSaving" icon="fa-check" class="btn-icon" />
                 <div v-if="isSaving" class="loading-spinner"></div>
                 {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
               </button>
