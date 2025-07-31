@@ -12,12 +12,11 @@
     "url": "https://github.com/mehdi-oyone/qr-generator.git"
   },
   "scripts": {
-    "build": "nuxt build",
+    "build": "prisma generate && nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "vercel-build": "node scripts/deploy.js"
+    "postinstall": "nuxt prepare"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.0",

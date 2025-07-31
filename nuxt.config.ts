@@ -3,7 +3,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   // Configuration Nuxt
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   // Modules
   modules: [
@@ -24,22 +24,17 @@ export default defineNuxtConfig({
 
   // Configuration Nitro
   nitro: {
-    preset: 'vercel'
-  },
-
-  // Configuration Prisma
-  prisma: {
-    clientOptions: {
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL
-        }
-      }
+    preset: 'vercel',
+    prerender: {
+      crawlLinks: false
     }
   },
 
   // Variables d'environnement
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL
-  }
+  },
+
+  // Configuration pour le build
+  ssr: true
 })

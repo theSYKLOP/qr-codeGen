@@ -1,0 +1,10 @@
+{
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "build": {
+    "env": {
+      "DATABASE_URL": "@database_url"
+    }
+  }
+} 

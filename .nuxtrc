@@ -1,0 +1,4 @@
+# Configuration Nuxt pour Vercel
+nitro.preset=vercel
+build.analyze=false
+build.templates=auto 
