@@ -1,0 +1,177 @@
+/* ===== FORMULAIRES ===== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  display: block;
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: var(--color-error);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--color-primary);
+  background-color: var(--color-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input:invalid,
+.form-select:invalid,
+.form-textarea:invalid {
+  border-color: var(--color-error);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background-color: var(--color-light);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+/* Groupe d'inputs */
+.input-group {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.input-group .form-input,
+.input-group .form-select {
+  flex: 1;
+}
+
+.input-group .form-select--small {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* Messages d'erreur et de validation */
+.form-error {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  margin-top: var(--space-1);
+}
+
+.form-help {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin-top: var(--space-1);
+}
+
+.form-success {
+  font-size: var(--font-size-sm);
+  color: var(--color-success);
+  margin-top: var(--space-1);
+}
+
+/* Checkbox et Radio */
+.form-checkbox,
+.form-radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.form-checkbox input[type="checkbox"],
+.form-radio input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+
+.form-checkbox input[type="checkbox"]:checked,
+.form-radio input[type="radio"]:checked {
+  accent-color: var(--color-accent);
+}
+
+/* Switch */
+.form-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.form-switch input[type="checkbox"] {
+  appearance: none;
+  width: 2.5rem;
+  height: 1.5rem;
+  background-color: var(--color-border);
+  border-radius: 1rem;
+  position: relative;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.form-switch input[type="checkbox"]:checked {
+  background-color: var(--color-accent);
+}
+
+.form-switch input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: var(--color-secondary);
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.form-switch input[type="checkbox"]:checked::before {
+  transform: translateX(1rem);
+}
+
+/* États de validation */
+.form-input.is-valid {
+  border-color: var(--color-success);
+}
+
+.form-input.is-invalid {
+  border-color: var(--color-error);
+}
+
+.form-input.is-warning {
+  border-color: var(--color-warning);
+} 

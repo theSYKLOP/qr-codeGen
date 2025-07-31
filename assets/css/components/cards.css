@@ -1,0 +1,196 @@
+/* ===== CARTES ===== */
+.card {
+  background-color: var(--color-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.card--elevated {
+  box-shadow: var(--shadow-md);
+}
+
+.card--elevated:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card--outlined {
+  border: var(--border-width) solid var(--color-border);
+  box-shadow: none;
+}
+
+.card--flat {
+  border: none;
+  box-shadow: none;
+}
+
+.card__header {
+  padding: var(--space-6);
+  border-bottom: var(--border-width) solid var(--color-border);
+  background-color: var(--color-light);
+}
+
+.card__body {
+  padding: var(--space-6);
+}
+
+.card__footer {
+  padding: var(--space-6);
+  border-top: var(--border-width) solid var(--color-border);
+  background-color: var(--color-light);
+}
+
+.card__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.card__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.card__content {
+  color: var(--color-muted);
+  line-height: var(--line-height-relaxed);
+}
+
+/* En-tête de carte avec icône */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.card-header__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  border-radius: var(--border-radius-lg);
+}
+
+.card-header__text {
+  flex: 1;
+}
+
+/* Cartes avec images */
+.card--image {
+  position: relative;
+}
+
+.card--image .card__image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card--image .card__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
+  color: var(--color-secondary);
+  border-bottom: none;
+}
+
+.card--image .card__title,
+.card--image .card__subtitle {
+  color: var(--color-secondary);
+}
+
+/* Cartes interactives */
+.card--interactive {
+  cursor: pointer;
+}
+
+.card--interactive:hover {
+  border-color: var(--color-accent);
+}
+
+.card--interactive:active {
+  transform: scale(0.98);
+}
+
+/* Cartes avec badges */
+.card--badge {
+  position: relative;
+}
+
+.card--badge .card__badge {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius);
+  z-index: 1;
+}
+
+/* Cartes avec actions */
+.card--actions {
+  position: relative;
+}
+
+.card--actions .card__actions {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  gap: var(--space-2);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.card--actions:hover .card__actions {
+  opacity: 1;
+}
+
+/* Cartes avec statut */
+.card--status-success {
+  border-left: 4px solid var(--color-success);
+}
+
+.card--status-error {
+  border-left: 4px solid var(--color-error);
+}
+
+.card--status-warning {
+  border-left: 4px solid var(--color-warning);
+}
+
+.card--status-info {
+  border-left: 4px solid var(--color-accent);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .card__header,
+  .card__body,
+  .card__footer {
+    padding: var(--space-4);
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .card-header__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+} 

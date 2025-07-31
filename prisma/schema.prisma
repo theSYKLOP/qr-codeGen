@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 👤 MODÈLE UTILISATEUR SIMPLIFIÉ
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hash bcrypt
+  nom       String?
+  prenom    String?
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // 🔗 RELATIONS
+  qrCodes   QrCode[]
+  
+  @@map("users")
+}
+
+// 🎯 MODÈLE QR CODE
+model QrCode {
+  id           String   @id @default(cuid())
+  typeProduit  String
+  nomProduit   String
+  franchise    String
+  prixVente    Int      // en FCFA
+  poids        Float
+  unitePoids   String   // "g" ou "kg"
+  fournisseur  String
+  codePng      String   // QR code en base64 ou URL
+  dateCreation DateTime @default(now())
+  
+  // 🔗 RELATION AVEC USER
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("qr_codes")
+}
+
+// 📊 ENUM POUR LES RÔLES
+enum Role {
+  USER
+  ADMIN
+}
