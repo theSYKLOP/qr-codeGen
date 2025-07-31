@@ -27,6 +27,9 @@ export default defineNuxtConfig({
     preset: 'vercel',
     prerender: {
       crawlLinks: false
+    },
+    experimental: {
+      wasm: false
     }
   },
 
@@ -36,5 +39,15 @@ export default defineNuxtConfig({
   },
 
   // Configuration pour le build
-  ssr: true
+  ssr: true,
+
+  // Configuration pour Vercel
+  experimental: {
+    payloadExtraction: false
+  },
+
+  // Configuration des imports
+  imports: {
+    autoImport: true
+  }
 })

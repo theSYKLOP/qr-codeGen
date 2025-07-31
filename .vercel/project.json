@@ -1,0 +1,10 @@
+{
+  "projectId": "qr-codegen",
+  "orgId": "team",
+  "settings": {
+    "framework": "nuxt",
+    "buildCommand": "npm run build",
+    "devCommand": "nuxt dev",
+    "installCommand": "npm install"
+  }
+} 
