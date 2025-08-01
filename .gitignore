@@ -23,4 +23,13 @@ logs
 .env.*
 !.env.example
 
+# Prisma
 /app/generated/prisma
+node_modules/.prisma
+
+# Vercel
+.vercel
+
+# Build artifacts
+*.tmp
+*.temp

@@ -17,7 +17,14 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "vercel-build": "nuxt build"
+    "vercel-build": "prisma generate && prisma migrate deploy && nuxt build",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "pre-commit": "node scripts/pre-commit.js",
+    "check": "node scripts/pre-commit.js",
+    "build-quick": "prisma generate && nuxt build --silent"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
@@ -32,6 +39,7 @@
     "@prisma/nuxt": "^0.3.0",
     "@vueuse/core": "^13.6.0",
     "eslint": "^9.32.0",
+    "jsbarcode": "^3.12.1",
     "nuxt": "^4.0.1",
     "prisma": "^6.13.0",
     "qrcode": "^1.5.4",

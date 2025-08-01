@@ -1,4 +1,4 @@
-// server/api/qrcodes.delete.ts
+// server/api/barcodes.delete.ts
 import { defineEventHandler, getQuery, createError } from 'h3'
 import prisma from '~/lib/prisma'
 
@@ -6,36 +6,36 @@ export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event)
     const { id } = query
-
+    
     if (!id) {
       throw createError({
         statusCode: 400,
         statusMessage: 'ID requis'
       })
     }
-
-    // Vérifier si le QR code existe
-    const existingQrCode = await prisma.qrCode.findUnique({
+    
+    const existingBarcode = await prisma.barcode.findUnique({
       where: { id: String(id) }
     })
-
-    if (!existingQrCode) {
+    
+    if (!existingBarcode) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'QR code non trouvé'
+        statusMessage: 'Code-barre non trouvé'
       })
     }
-
-    await prisma.qrCode.delete({
+    
+    await prisma.barcode.delete({
       where: { id: String(id) }
     })
-
-    return { 
+    
+    return {
       success: true,
-      message: 'QR code supprimé avec succès'
+      message: 'Code-barre supprimé avec succès'
     }
+    
   } catch (error) {
-    console.error('Erreur lors de la suppression du QR code:', error)
+    console.error('Erreur lors de la suppression du code-barre:', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'Erreur serveur',

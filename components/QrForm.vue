@@ -1,11 +1,35 @@
 <!-- components/QrForm.vue -->
 <template>
   <div class="qr-form">
-    <form @submit.prevent="generateQr" class="form">
+    <!-- Toggle QR Code / Code-barre -->
+    <div class="form-toggle">
+              <button 
+          type="button"
+          class="toggle-btn"
+          :class="{ 'toggle-btn--active': !props.isBarcodeMode }"
+          @click="switchToQrMode"
+        >
+          <FontAwesomeIcon icon="fa-qrcode" class="toggle-icon" />
+          QR Code
+        </button>
+        <button 
+          type="button"
+          class="toggle-btn"
+          :class="{ 'toggle-btn--active': props.isBarcodeMode }"
+          @click="switchToBarcodeMode"
+        >
+          <FontAwesomeIcon icon="fa-barcode" class="toggle-icon" />
+          Code-barre
+        </button>
+    </div>
+
+    <form @submit.prevent="props.isBarcodeMode ? generateBarcode() : generateQr()" class="form">
       
-      <!-- Type de produit -->
+      <!-- Type de produit (QR) ou Catégorie (Barcode) -->
       <div class="form-group">
-        <label class="form-label required">Type de produit</label>
+        <label class="form-label required">
+          {{ props.isBarcodeMode ? 'Catégorie' : 'Type de produit' }}
+        </label>
         <select 
           v-model="formData.typeProduit"
           class="form-select"
@@ -13,7 +37,7 @@
         >
           <option value="">Sélectionnez un type</option>
           <option 
-            v-for="type in typesProduit" 
+            v-for="type in (props.isBarcodeMode ? categoriesProduit : typesProduit)" 
             :key="type.value"
             :value="type.value"
           >
@@ -30,6 +54,18 @@
           type="text"
           class="form-input"
           placeholder="Ex: Banane"
+          required
+        />
+      </div>
+
+      <!-- Référence (Code-barre uniquement) -->
+      <div v-if="props.isBarcodeMode" class="form-group">
+        <label class="form-label required">Référence du produit</label>
+        <input 
+          v-model="formData.reference"
+          type="text"
+          class="form-input"
+          placeholder="Ex: PROD-001-2024"
           required
         />
       </div>
@@ -58,8 +94,8 @@
         />
       </div>
 
-      <!-- Poids avec unité -->
-      <div class="form-group">
+      <!-- Poids avec unité (QR uniquement) -->
+      <div v-if="!props.isBarcodeMode" class="form-group">
         <label class="form-label required">Poids</label>
         <div class="input-group">
           <input 
@@ -95,8 +131,8 @@
         />
       </div>
 
-      <!-- Type de QR Code -->
-      <div class="form-group">
+      <!-- Type de QR Code (QR uniquement) -->
+      <div v-if="!props.isBarcodeMode" class="form-group">
         <label class="form-label required">Type de QR Code</label>
         <select 
           v-model="formData.qrType"
@@ -145,21 +181,21 @@
         <button 
           type="submit"
           class="btn btn--primary"
-          :disabled="isGenerating"
+          :disabled="isGenerating || isPreloading"
         >
-          <FontAwesomeIcon v-if="!isGenerating" icon="fa-qrcode" class="btn-icon" />
-          <div v-if="isGenerating" class="loading-spinner"></div>
-          {{ isGenerating ? 'Génération...' : (props.editMode ? 'Sauvegarder' : 'Générer QR Code') }}
+          <FontAwesomeIcon v-if="!isGenerating && !isPreloading" :icon="props.isBarcodeMode ? 'fa-barcode' : 'fa-qrcode'" class="btn-icon" />
+          <div v-if="isGenerating || isPreloading" class="loading-spinner"></div>
+          {{ isGenerating ? 'Génération...' : isPreloading ? 'Préparation...' : (props.editMode ? 'Sauvegarder' : (props.isBarcodeMode ? 'Générer Code-barre' : 'Générer QR Code')) }}
         </button>
       </div>
     </form>
 
-    <!-- Modal d'aperçu du QR Code -->
+    <!-- Modal d'aperçu du QR Code/Code-barre -->
     <Teleport to="body">
       <div v-if="showQrModal" class="modal-overlay" @click="closeModal">
         <div class="modal" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title">Aperçu du QR Code</h3>
+            <h3 class="modal-title">Aperçu du {{ props.isBarcodeMode ? 'Code-barre' : 'QR Code' }}</h3>
             <button 
               class="btn btn--ghost btn--small"
               @click="showQrModal = false"
@@ -169,12 +205,12 @@
           </div>
 
           <div class="modal-body">
-            <!-- QR Code généré -->
+            <!-- QR Code/Code-barre généré -->
             <div class="qr-display">
               <img 
                 v-if="generatedQrCode"
                 :src="generatedQrCode" 
-                alt="QR Code généré"
+                :alt="props.isBarcodeMode ? 'Code-barre généré' : 'QR Code généré'"
                 class="qr-image"
               />
             </div>
@@ -190,19 +226,34 @@
               <div class="info-item">
                 <strong>Prix :</strong> {{ formData.prixVente }} FCFA
               </div>
-              <div class="info-item">
+              <div v-if="!props.isBarcodeMode" class="info-item">
                 <strong>Poids :</strong> {{ formData.poids }} {{ formData.unitePoids }}
+              </div>
+              <div v-if="props.isBarcodeMode" class="info-item">
+                <strong>Référence :</strong> {{ formData.reference }}
+              </div>
+              <div v-if="props.isBarcodeMode" class="info-item">
+                <strong>Catégorie :</strong> {{ formData.typeProduit }}
               </div>
               <div class="info-item">
                 <strong>Créé par :</strong> {{ formData.auteur }}
               </div>
             </div>
 
+            <!-- Indicateur de progression -->
+            <div v-if="isSaving" class="progress-indicator">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+              <p class="progress-text">Compression et sauvegarde en cours...</p>
+            </div>
+            
             <!-- Boutons d'action -->
             <div class="modal-actions">
               <button 
                 class="btn btn--secondary"
                 @click="downloadQr"
+                :disabled="isSaving"
               >
                 <FontAwesomeIcon icon="fa-download" class="btn-icon" />
                 Télécharger PNG
@@ -210,7 +261,7 @@
               
               <button 
                 class="btn btn--primary"
-                @click="saveQrToDatabase"
+                @click="props.isBarcodeMode ? saveBarcodeToDatabase() : saveQrToDatabase()"
                 :disabled="isSaving"
               >
                 <FontAwesomeIcon v-if="!isSaving" icon="fa-check" class="btn-icon" />
@@ -238,16 +289,25 @@ const props = defineProps({
   qrCodeToEdit: {
     type: Object,
     default: null
+  },
+  barcodeToEdit: {
+    type: Object,
+    default: null
+  },
+  isBarcodeMode: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['qr-created', 'qr-updated'])
+const emit = defineEmits(['qr-created', 'qr-updated', 'barcode-created', 'barcode-updated', 'mode-changed'])
 
 // État du composant
 const showQrModal = ref(false)
 const isGenerating = ref(false)
 const isSaving = ref(false)
 const generatedQrCode = ref('')
+const isPreloading = ref(false)
 
 // Options pour les selects
 const typesProduit = [
@@ -271,6 +331,17 @@ const qrTypes = [
   { label: 'Page de résultat (URL)', value: 'result' }
 ]
 
+const categoriesProduit = [
+  { label: 'Électronique', value: 'Électronique' },
+  { label: 'Vêtements', value: 'Vêtements' },
+  { label: 'Alimentation', value: 'Alimentation' },
+  { label: 'Cosmétiques', value: 'Cosmétiques' },
+  { label: 'Livres', value: 'Livres' },
+  { label: 'Sport', value: 'Sport' },
+  { label: 'Jouets', value: 'Jouets' },
+  { label: 'Maison', value: 'Maison' }
+]
+
 // Données du formulaire
 const formData = reactive({
   typeProduit: '',
@@ -281,13 +352,17 @@ const formData = reactive({
   unitePoids: 'g',
   fournisseur: 'PROXI NOVA',
   auteur: '',
-  qrType: 'raw' // Ajout du type de QR code
+  qrType: 'raw', // Ajout du type de QR code
+  reference: '', // Pour les codes-barres
+  categorie: '' // Pour les codes-barres
 })
 
 // Initialiser le formulaire en mode édition
 const initializeEditMode = () => {
-  console.log('Initializing edit mode:', props.editMode, props.qrCodeToEdit)
+  console.log('Initializing edit mode:', props.editMode, props.qrCodeToEdit, props.barcodeToEdit)
+  
   if (props.editMode && props.qrCodeToEdit) {
+    // Mode édition QR Code
     const qrData = {
       typeProduit: props.qrCodeToEdit.typeProduit,
       nomProduit: props.qrCodeToEdit.nomProduit,
@@ -297,22 +372,52 @@ const initializeEditMode = () => {
       unitePoids: props.qrCodeToEdit.unitePoids,
       fournisseur: props.qrCodeToEdit.fournisseur,
       auteur: props.qrCodeToEdit.user?.nom || 'Utilisateur',
-      qrType: props.qrCodeToEdit.qrType || 'raw' // Initialiser le type de QR code
+      qrType: props.qrCodeToEdit.qrType || 'raw'
     }
-    console.log('Setting form data:', qrData)
+    console.log('Setting QR form data:', qrData)
     Object.assign(formData, qrData)
+  } else if (props.editMode && props.barcodeToEdit) {
+    // Mode édition Code-barre
+    const barcodeData = {
+      typeProduit: props.barcodeToEdit.categorie,
+      nomProduit: props.barcodeToEdit.nomProduit,
+      franchise: props.barcodeToEdit.franchise,
+      prixVente: props.barcodeToEdit.prixVente.toString(),
+      reference: props.barcodeToEdit.reference,
+      categorie: props.barcodeToEdit.categorie,
+      fournisseur: props.barcodeToEdit.fournisseur,
+      auteur: props.barcodeToEdit.user?.nom || 'Utilisateur'
+    }
+    console.log('Setting barcode form data:', barcodeData)
+    Object.assign(formData, barcodeData)
   }
 }
 
 // Initialiser le formulaire au montage et quand les props changent
 onMounted(() => {
   initializeEditMode()
+  // Précharger la bibliothèque QR
+  preloadQRLibrary()
 })
 
+// Précharger la bibliothèque QR pour de meilleures performances
+const preloadQRLibrary = async () => {
+  if (typeof window !== 'undefined') {
+    isPreloading.value = true
+    try {
+      // Précharger QRCode en arrière-plan
+      await import('qrcode')
+    } catch (error) {
+      console.warn('Erreur préchargement QR:', error)
+    } finally {
+      isPreloading.value = false
+    }
+  }
+}
+
 // Surveiller les changements des props pour le mode édition
-watch(() => [props.editMode, props.qrCodeToEdit], (newValues) => {
-  console.log('Props changed:', newValues)
-  if (props.editMode && props.qrCodeToEdit) {
+watch(() => [props.editMode, props.qrCodeToEdit, props.barcodeToEdit], () => {
+  if (props.editMode && (props.qrCodeToEdit || props.barcodeToEdit)) {
     initializeEditMode()
   }
 }, { immediate: true })
@@ -320,6 +425,17 @@ watch(() => [props.editMode, props.qrCodeToEdit], (newValues) => {
 // Fermer modal sur overlay
 const closeModal = () => {
   showQrModal.value = false
+}
+
+// Fonctions de toggle
+const switchToQrMode = () => {
+  emit('mode-changed', false)
+  resetForm()
+}
+
+const switchToBarcodeMode = () => {
+  emit('mode-changed', true)
+  resetForm()
 }
 
 // Réinitialiser le formulaire
@@ -333,11 +449,17 @@ const resetForm = () => {
     unitePoids: 'g',
     fournisseur: 'PROXI NOVA',
     auteur: '',
-    qrType: 'raw'
+    qrType: 'raw',
+    reference: '',
+    categorie: ''
   })
 }
 
-// Générer le QR Code
+// Cache pour les QR codes et codes-barres générés
+const qrCache = new Map()
+const barcodeCache = new Map()
+
+// Générer le QR Code avec optimisations
 const generateQr = async () => {
   try {
     isGenerating.value = true
@@ -364,20 +486,80 @@ const generateQr = async () => {
       qrContent = `${baseUrl}/resultat?data=${encodeURIComponent(JSON.stringify(qrData))}`
     }
     
+    // Vérifier le cache
+    const cacheKey = `${qrContent}-${formData.qrType}`
+    if (qrCache.has(cacheKey)) {
+      generatedQrCode.value = qrCache.get(cacheKey)
+      showQrModal.value = true
+      return
+    }
+    
+    // Générer le QR code avec des paramètres optimisés
     generatedQrCode.value = await QRCode.toDataURL(qrContent, {
-      width: 300,
-      margin: 2,
+      width: 256, // Réduit de 300 à 256 pour de meilleures performances
+      margin: 1, // Réduit la marge
       color: {
         dark: '#000000',
         light: '#FFFFFF'
-      }
+      },
+      errorCorrectionLevel: 'M', // Niveau de correction d'erreur moyen
+      type: 'image/png',
+      quality: 0.8 // Qualité légèrement réduite pour de meilleures performances
     })
+    
+    // Mettre en cache
+    qrCache.set(cacheKey, generatedQrCode.value)
     
     showQrModal.value = true
     
   } catch (error) {
     console.error('Erreur génération QR:', error)
     alert('Impossible de générer le QR code')
+  } finally {
+    isGenerating.value = false
+  }
+}
+
+// Générer le Code-barre avec JsBarcode
+const generateBarcode = async () => {
+  try {
+    isGenerating.value = true
+    
+    // Vérifier le cache
+    const cacheKey = `${formData.reference}-${formData.nomProduit}`
+    if (barcodeCache.has(cacheKey)) {
+      generatedQrCode.value = barcodeCache.get(cacheKey)
+      showQrModal.value = true
+      return
+    }
+    
+    // Créer un canvas pour le code-barre
+    const canvas = document.createElement('canvas')
+    
+    // Utiliser JsBarcode pour générer le code-barre
+    const JsBarcode = await import('jsbarcode')
+    JsBarcode.default(canvas, formData.reference, {
+      format: 'CODE128',
+      width: 2,
+      height: 100,
+      displayValue: true,
+      fontSize: 20,
+      margin: 10,
+      background: '#ffffff',
+      lineColor: '#000000'
+    })
+    
+    // Convertir le canvas en base64
+    generatedQrCode.value = canvas.toDataURL('image/png')
+    
+    // Mettre en cache
+    barcodeCache.set(cacheKey, generatedQrCode.value)
+    
+    showQrModal.value = true
+    
+  } catch (error) {
+    console.error('Erreur génération code-barre:', error)
+    alert('Impossible de générer le code-barre')
   } finally {
     isGenerating.value = false
   }
@@ -391,10 +573,48 @@ const downloadQr = () => {
   link.click()
 }
 
-// Sauvegarder en base de données
+// Compresser l'image base64
+const compressBase64Image = (base64String, quality = 0.7) => {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      // Redimensionner pour réduire la taille
+      const maxSize = 200
+      let { width, height } = img
+      
+      if (width > height) {
+        if (width > maxSize) {
+          height = (height * maxSize) / width
+          width = maxSize
+        }
+      } else {
+        if (height > maxSize) {
+          width = (width * maxSize) / height
+          height = maxSize
+        }
+      }
+      
+      canvas.width = width
+      canvas.height = height
+      
+      ctx.drawImage(img, 0, 0, width, height)
+      
+      resolve(canvas.toDataURL('image/png', quality))
+    }
+    img.src = base64String
+  })
+}
+
+// Sauvegarder en base de données avec optimisations
 const saveQrToDatabase = async () => {
   try {
     isSaving.value = true
+    
+    // Compresser l'image avant l'envoi
+    const compressedQrCode = await compressBase64Image(generatedQrCode.value, 0.8)
     
     const qrCodeData = {
       typeProduit: formData.typeProduit,
@@ -405,7 +625,7 @@ const saveQrToDatabase = async () => {
       unitePoids: formData.unitePoids,
       fournisseur: formData.fournisseur,
       auteur: formData.auteur,
-      codePng: generatedQrCode.value,
+      codePng: compressedQrCode,
       qrType: formData.qrType
     }
     
@@ -417,27 +637,90 @@ const saveQrToDatabase = async () => {
         method: 'PUT',
         body: qrCodeData
       })
-      emit('qr-updated', response.data)
+      emit('qr-updated', response.qrCode)
     } else {
       // Mode création
       response = await $fetch('/api/qrcodes', {
         method: 'POST',
         body: qrCodeData
       })
-      emit('qr-created', response.data)
+      emit('qr-created', response.qrCode)
     }
     
     showQrModal.value = false
     resetForm()
     
-    alert(props.editMode ? 'QR Code modifié avec succès !' : 'QR Code sauvegardé avec succès !')
+    // Notification de succès
+    showNotification(props.editMode ? 'QR Code modifié avec succès !' : 'QR Code sauvegardé avec succès !', 'success')
     
   } catch (error) {
     console.error('Erreur sauvegarde:', error)
-    alert('Impossible de sauvegarder le QR code')
+    showNotification('Impossible de sauvegarder le QR code', 'error')
   } finally {
     isSaving.value = false
   }
+}
+
+// Sauvegarder le code-barre en base de données
+const saveBarcodeToDatabase = async () => {
+  try {
+    isSaving.value = true
+    
+    // Compresser l'image avant l'envoi
+    const compressedBarcode = await compressBase64Image(generatedQrCode.value, 0.8)
+    
+    const barcodeData = {
+      nomProduit: formData.nomProduit,
+      franchise: formData.franchise,
+      reference: formData.reference,
+      prixVente: parseInt(formData.prixVente),
+      categorie: formData.typeProduit,
+      fournisseur: formData.fournisseur,
+      codePng: compressedBarcode
+    }
+    
+    let response
+    
+    if (props.editMode && props.barcodeToEdit) {
+      // Mode modification
+      response = await $fetch(`/api/barcodes?id=${props.barcodeToEdit.id}`, {
+        method: 'PUT',
+        body: barcodeData
+      })
+      emit('barcode-updated', response.barcode)
+    } else {
+      // Mode création
+      response = await $fetch('/api/barcodes', {
+        method: 'POST',
+        body: barcodeData
+      })
+      emit('barcode-created', response.barcode)
+    }
+    
+    showQrModal.value = false
+    resetForm()
+    
+    // Notification de succès
+    showNotification(props.editMode ? 'Code-barre modifié avec succès !' : 'Code-barre sauvegardé avec succès !', 'success')
+    
+  } catch (error) {
+    console.error('Erreur sauvegarde code-barre:', error)
+    showNotification('Impossible de sauvegarder le code-barre', 'error')
+  } finally {
+    isSaving.value = false
+  }
+}
+
+// Afficher une notification
+const showNotification = (message, type = 'info') => {
+  const notification = document.createElement('div')
+  notification.className = `notification notification--${type}`
+  notification.textContent = message
+  document.body.appendChild(notification)
+  
+  setTimeout(() => {
+    notification.remove()
+  }, 3000)
 }
 
 // Description du type de QR code
@@ -451,6 +734,52 @@ const getQrTypeDescription = () => {
 </script>
 
 <style scoped>
+/* ===== TOGGLE ===== */
+.form-toggle {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  background-color: var(--color-light);
+  border-radius: var(--border-radius);
+  padding: var(--space-1);
+}
+
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-muted);
+  background-color: transparent;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  outline: none;
+}
+
+.toggle-btn:hover {
+  color: var(--color-primary);
+  background-color: var(--color-secondary);
+}
+
+.toggle-btn--active {
+  color: var(--color-primary);
+  background-color: var(--color-secondary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
 /* ===== FORMULAIRE ===== */
 .form {
   display: flex;
@@ -628,6 +957,40 @@ const getQrTypeDescription = () => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ===== PROGRESS INDICATOR ===== */
+.progress-indicator {
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: 2px;
+  animation: progressFill 2s ease-in-out infinite;
+}
+
+@keyframes progressFill {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+.progress-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin: 0;
 }
 
 /* ===== MODAL ===== */

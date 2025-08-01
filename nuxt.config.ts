@@ -1,61 +1,72 @@
 // nuxt.config.ts
 import { defineNuxtConfig } from 'nuxt/config'
-import { createResolver } from '@nuxt/kit'
-
-const { resolve } = createResolver(import.meta.url)
 
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-29',
-  devtools: { enabled: process.env.NODE_ENV === 'development' },
+  // Configuration de développement
+  devtools: { enabled: false },
   
+  // Configuration des modules
   modules: [
-    '@prisma/nuxt',
-    '@nuxt/eslint',
-    '@nuxt/fonts',
-    '@nuxt/icon'
+    '@nuxt/ui',
+    '@nuxt/icon',
+    '@nuxt/fonts'
   ],
 
-  // Configuration des auto-imports
-  components: {
-    dirs: [
-      '~/components'
-    ],
-    global: true
-  },
-
-  // Variables d'environnement
-  runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL,
-    public: {}
-  },
-
-  // 🔥 CONFIGURATION NITRO OPTIMISÉE
-  nitro: {
-    preset: process.env.NODE_ENV === 'production' ? 'vercel' : undefined,
-    experimental: {
-      wasm: true
-    }
-  },
-
-  // 🔥 BUILD SIMPLIFIÉ
-  build: {
-    transpile: ['@nuxt/ui']  // ✅ SUPPRIMÉ : '@prisma/client' (géré par le module)
-  },
-
-  // 🔥 CONFIGURATION VITE AVEC ALIAS OFFICIEL
+  // Configuration Vite pour optimiser le build
   vite: {
-    css: {
-      devSourcemap: false
-    },
     build: {
-      sourcemap: false
-    },
-    resolve: {
-      alias: {
-        // ✅ ALIAS OFFICIEL PRISMA : chemin ABSOLU obligatoire
-        '.prisma/client/index-browser': resolve('./node_modules/.prisma/client/index-browser.js')
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'qrcode': ['qrcode'],
+            'jsbarcode': ['jsbarcode']
+          }
+        }
       }
+    },
+    optimizeDeps: {
+      include: ['qrcode', 'jsbarcode']
     }
-    // ✅ SUPPRIMÉ : optimizeDeps et rollupOptions (géré par le module)
+  },
+
+  // Configuration Nitro
+  nitro: {
+    preset: 'vercel',
+    compressPublicAssets: true,
+    minify: true
+  },
+
+  // Configuration de l'application
+  app: {
+    head: {
+      title: 'Générateur QR - Interface Épurée 2025',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { 
+          name: 'description', 
+          content: 'Générateur de codes QR avec interface minimaliste noir et blanc' 
+        }
+      ]
+    }
+  },
+
+  // Configuration CSS
+  css: [
+    '~/assets/css/main.css'
+  ],
+
+  // Configuration des composants
+  components: true,
+
+  // Configuration des plugins
+  plugins: [
+    '~/plugins/fontawesome.client.ts'
+  ],
+
+  // Configuration TypeScript
+  typescript: {
+    strict: true,
+    typeCheck: false // Désactiver pour accélérer le build
   }
 })

@@ -24,6 +24,7 @@ model User {
   
   // 🔗 RELATIONS
   qrCodes   QrCode[]
+  barcodes  Barcode[]
   
   @@map("users")
 }
@@ -47,6 +48,25 @@ model QrCode {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("qr_codes")
+}
+
+// 📊 MODÈLE CODE-BARRE
+model Barcode {
+  id           String   @id @default(cuid())
+  nomProduit   String
+  franchise    String
+  reference    String   // Référence unique du produit
+  prixVente    Int      // en FCFA
+  categorie    String   // Catégorie du produit
+  fournisseur  String
+  codePng      String   // Code-barre en base64 ou URL
+  dateCreation DateTime @default(now())
+  
+  // 🔗 RELATION AVEC USER
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("barcodes")
 }
 
 // 📊 ENUM POUR LES RÔLES

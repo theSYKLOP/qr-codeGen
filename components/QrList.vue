@@ -37,67 +37,71 @@
     <!-- Liste des QR codes -->
     <div v-else class="qr-list-container">
       <!-- État vide -->
-      <div v-if="filteredQrCodes.length === 0" class="empty-state">
-        <FontAwesomeIcon icon="fa-qrcode" class="empty-icon" />
-        <p class="empty-text">Aucun QR code trouvé</p>
-        <p class="empty-subtext">Créez votre premier code QR !</p>
+      <div v-if="filteredItems.length === 0" class="empty-state">
+        <FontAwesomeIcon :icon="props.showBarcodes ? 'fa-barcode' : 'fa-qrcode'" class="empty-icon" />
+        <p class="empty-text">Aucun {{ props.showBarcodes ? 'code-barre' : 'QR code' }} trouvé</p>
+        <p class="empty-subtext">Créez votre premier {{ props.showBarcodes ? 'code-barre' : 'QR code' }} !</p>
       </div>
 
-      <!-- Cartes QR -->
+      <!-- Cartes QR/Codes-barres -->
       <div 
-        v-for="qr in filteredQrCodes" 
-        :key="qr.id"
+        v-for="item in filteredItems" 
+        :key="item.id"
         class="qr-card"
-        @click="showQrDetail(qr)"
+        @click="showItemDetail(item)"
       >
-        <div class="qr-card-content">
-          <div class="qr-card-header">
-            <div class="qr-badges">
-              <span class="qr-badge">{{ qr.typeProduit }}</span>
-              <span class="qr-badge qr-badge--type" :class="getQrTypeClass(qr.qrType)">
-                {{ getQrTypeLabel(qr.qrType) }}
-              </span>
+                  <div class="qr-card-content">
+            <div class="qr-card-header">
+              <div class="qr-badges">
+                <span class="qr-badge">{{ props.showBarcodes ? item.categorie : item.typeProduit }}</span>
+                <span class="qr-badge qr-badge--type" :class="getItemTypeClass(item)">
+                  {{ getItemTypeLabel(item) }}
+                </span>
+              </div>
+              <span class="qr-date">{{ formatDate(item.dateCreation) }}</span>
             </div>
-            <span class="qr-date">{{ formatDate(qr.dateCreation) }}</span>
-          </div>
-          
-          <div class="qr-card-body">
-            <div class="qr-info">
-              <h3 class="qr-title">{{ qr.nomProduit }}</h3>
-              
-              <div class="qr-details">
-                <div class="qr-detail-item">
-                  <FontAwesomeIcon icon="fa-building" class="detail-icon" />
-                  <span>{{ qr.franchise }}</span>
-                </div>
+            
+            <div class="qr-card-body">
+              <div class="qr-info">
+                <h3 class="qr-title">{{ item.nomProduit }}</h3>
                 
-                <div class="qr-detail-row">
-                  <div class="qr-detail-item price">
-                    <FontAwesomeIcon icon="fa-dollar-sign" class="detail-icon" />
-                    <span>{{ qr.prixVente }} FCFA</span>
-                  </div>
+                <div class="qr-details">
                   <div class="qr-detail-item">
-                    <FontAwesomeIcon icon="fa-weight-hanging" class="detail-icon" />
-                    <span>{{ qr.poids }} {{ qr.unitePoids }}</span>
+                    <FontAwesomeIcon icon="fa-building" class="detail-icon" />
+                    <span>{{ item.franchise }}</span>
+                  </div>
+                  
+                  <div class="qr-detail-row">
+                    <div class="qr-detail-item price">
+                      <FontAwesomeIcon icon="fa-dollar-sign" class="detail-icon" />
+                      <span>{{ item.prixVente }} FCFA</span>
+                    </div>
+                    <div v-if="!props.showBarcodes" class="qr-detail-item">
+                      <FontAwesomeIcon icon="fa-weight-hanging" class="detail-icon" />
+                      <span>{{ item.poids }} {{ item.unitePoids }}</span>
+                    </div>
+                    <div v-if="props.showBarcodes" class="qr-detail-item">
+                      <FontAwesomeIcon icon="fa-tag" class="detail-icon" />
+                      <span>{{ item.reference }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- QR Code miniature -->
-            <div class="qr-preview">
-              <img 
-                :src="qr.codePng" 
-                :alt="`QR Code ${qr.nomProduit}`"
-                class="qr-mini"
-              />
-              <div class="qr-overlay">
-                <FontAwesomeIcon icon="fa-eye" />
+              <!-- QR Code/Code-barre miniature -->
+              <div class="qr-preview">
+                <img 
+                  :src="item.codePng" 
+                  :alt="`${props.showBarcodes ? 'Code-barre' : 'QR Code'} ${item.nomProduit}`"
+                  class="qr-mini"
+                />
+                <div class="qr-overlay">
+                  <FontAwesomeIcon icon="fa-eye" />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
     </div>
 
     <!-- Pagination -->
@@ -107,7 +111,7 @@
           Page {{ pagination.page }} sur {{ pagination.totalPages }}
         </span>
         <span class="pagination-count">
-          {{ pagination.total }} QR codes au total
+          {{ pagination.total }} {{ props.showBarcodes ? 'codes-barres' : 'QR codes' }} au total
         </span>
       </div>
       
@@ -161,7 +165,7 @@
       <div v-if="showDetailModal" class="modal-overlay" @click="closeModal">
         <div class="modal modal--large" @click.stop>
           <div class="modal-header">
-            <h3 class="modal-title">{{ selectedQr?.nomProduit }}</h3>
+            <h3 class="modal-title">{{ selectedItem?.nomProduit }}</h3>
             <button 
               class="btn btn--ghost btn--small"
               @click="showDetailModal = false"
@@ -170,12 +174,12 @@
             </button>
           </div>
 
-          <div class="modal-body" v-if="selectedQr">
-            <!-- QR Code grand format -->
+          <div class="modal-body" v-if="selectedItem">
+            <!-- QR Code/Code-barre grand format -->
             <div class="qr-showcase">
               <img 
-                :src="selectedQr.codePng" 
-                :alt="`QR Code ${selectedQr.nomProduit}`"
+                :src="selectedItem.codePng" 
+                :alt="`${props.showBarcodes ? 'Code-barre' : 'QR Code'} ${selectedItem.nomProduit}`"
                 class="qr-large"
               />
             </div>
@@ -187,8 +191,8 @@
                   <FontAwesomeIcon icon="fa-tag" />
                 </div>
                 <div class="detail-card-content">
-                  <span class="detail-label">Type</span>
-                  <span class="detail-value">{{ selectedQr.typeProduit }}</span>
+                  <span class="detail-label">{{ props.showBarcodes ? 'Catégorie' : 'Type' }}</span>
+                  <span class="detail-value">{{ props.showBarcodes ? selectedItem.categorie : selectedItem.typeProduit }}</span>
                 </div>
               </div>
 
@@ -198,7 +202,7 @@
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Franchise</span>
-                  <span class="detail-value">{{ selectedQr.franchise }}</span>
+                  <span class="detail-value">{{ selectedItem.franchise }}</span>
                 </div>
               </div>
 
@@ -208,17 +212,27 @@
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Prix</span>
-                  <span class="detail-value detail-value--price">{{ selectedQr.prixVente }} FCFA</span>
+                  <span class="detail-value detail-value--price">{{ selectedItem.prixVente }} FCFA</span>
                 </div>
               </div>
 
-              <div class="detail-card">
+              <div v-if="!props.showBarcodes" class="detail-card">
                 <div class="detail-card-icon detail-card-icon--orange">
                   <FontAwesomeIcon icon="fa-weight-hanging" />
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Poids</span>
-                  <span class="detail-value">{{ selectedQr.poids }} {{ selectedQr.unitePoids }}</span>
+                  <span class="detail-value">{{ selectedItem.poids }} {{ selectedItem.unitePoids }}</span>
+                </div>
+              </div>
+
+              <div v-if="props.showBarcodes" class="detail-card">
+                <div class="detail-card-icon detail-card-icon--orange">
+                  <FontAwesomeIcon icon="fa-tag" />
+                </div>
+                <div class="detail-card-content">
+                  <span class="detail-label">Référence</span>
+                  <span class="detail-value">{{ selectedItem.reference }}</span>
                 </div>
               </div>
 
@@ -228,7 +242,7 @@
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Fournisseur</span>
-                  <span class="detail-value">{{ selectedQr.fournisseur }}</span>
+                  <span class="detail-value">{{ selectedItem.fournisseur }}</span>
                 </div>
               </div>
 
@@ -238,7 +252,7 @@
                 </div>
                 <div class="detail-card-content">
                   <span class="detail-label">Créé par</span>
-                  <span class="detail-value">{{ selectedQr.user?.nom || 'Utilisateur' }}</span>
+                  <span class="detail-value">{{ selectedItem.user?.nom || 'Utilisateur' }}</span>
                 </div>
               </div>
             </div>
@@ -247,7 +261,7 @@
             <div class="modal-actions">
               <button 
                 class="btn btn--outline"
-                @click="downloadQrCode(selectedQr)"
+                @click="downloadItem(selectedItem)"
               >
                 <FontAwesomeIcon icon="fa-download" class="btn-icon" />
                 Télécharger HD
@@ -255,7 +269,7 @@
               
               <button 
                 class="btn btn--primary"
-                @click="editQrCode(selectedQr)"
+                @click="editItem(selectedItem)"
               >
                 <FontAwesomeIcon icon="fa-edit" class="btn-icon" />
                 Modifier
@@ -263,7 +277,7 @@
               
               <button 
                 class="btn btn--danger"
-                @click="deleteQrCode(selectedQr)"
+                @click="deleteItem(selectedItem)"
                 :disabled="isDeleting"
               >
                 <FontAwesomeIcon v-if="!isDeleting" icon="fa-trash" class="btn-icon" />
@@ -287,6 +301,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  barcodes: {
+    type: Array,
+    default: () => []
+  },
   pagination: {
     type: Object,
     default: null
@@ -294,38 +312,46 @@ const props = defineProps({
   isLoading: {
     type: Boolean,
     default: false
+  },
+  showBarcodes: {
+    type: Boolean,
+    default: false
   }
 })
 
 // Émissions
-const emit = defineEmits(['refresh-list', 'edit-qr-code', 'change-page'])
+const emit = defineEmits(['refresh-list', 'edit-qr-code', 'edit-barcode', 'change-page'])
 
 // État local
 const searchTerm = ref('')
 const filterType = ref('')
 const showDetailModal = ref(false)
-const selectedQr = ref(null)
+const selectedItem = ref(null)
 const isDeleting = ref(false)
 
 // Options de filtre des types
 const typeOptions = computed(() => {
-  const types = [...new Set(props.qrCodes.map(qr => qr.typeProduit))]
+  const items = props.showBarcodes ? props.barcodes : props.qrCodes
+  const types = [...new Set(items.map(item => props.showBarcodes ? item.categorie : item.typeProduit))]
   return types.map(type => ({ label: type, value: type }))
 })
 
-// QR codes filtrés
-const filteredQrCodes = computed(() => {
-  let filtered = props.qrCodes
+// Items filtrés (QR codes ou codes-barres)
+const filteredItems = computed(() => {
+  let filtered = props.showBarcodes ? props.barcodes : props.qrCodes
 
   if (searchTerm.value) {
-    filtered = filtered.filter(qr => 
-      qr.nomProduit.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      qr.franchise.toLowerCase().includes(searchTerm.value.toLowerCase())
+    filtered = filtered.filter(item => 
+      item.nomProduit.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+      item.franchise.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+      (props.showBarcodes && item.reference?.toLowerCase().includes(searchTerm.value.toLowerCase()))
     )
   }
 
   if (filterType.value) {
-    filtered = filtered.filter(qr => qr.typeProduit === filterType.value)
+    filtered = filtered.filter(item => 
+      props.showBarcodes ? item.categorie === filterType.value : item.typeProduit === filterType.value
+    )
   }
 
   return filtered.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation))
@@ -336,47 +362,57 @@ const closeModal = () => {
   showDetailModal.value = false
 }
 
-// Afficher le détail d'un QR code
-const showQrDetail = (qr) => {
-  selectedQr.value = qr
+// Afficher le détail d'un item (QR code ou code-barre)
+const showItemDetail = (item) => {
+  selectedItem.value = item
   showDetailModal.value = true
 }
 
-// Télécharger un QR code
-const downloadQrCode = (qr) => {
+// Télécharger un item (QR code ou code-barre)
+const downloadItem = (item) => {
   const link = document.createElement('a')
-  link.href = qr.codePng
-  link.download = `qr-${qr.nomProduit}-${qr.poids}${qr.unitePoids}-${qr.prixVente}FCFA.png`
+  link.href = item.codePng
+  const filename = props.showBarcodes 
+    ? `barcode-${item.nomProduit}-${item.reference}-${item.prixVente}FCFA.png`
+    : `qr-${item.nomProduit}-${item.poids}${item.unitePoids}-${item.prixVente}FCFA.png`
+  link.download = filename
   link.click()
 }
 
-// Modifier un QR code
-const editQrCode = (qr) => {
+// Modifier un item
+const editItem = (item) => {
   showDetailModal.value = false
-  emit('edit-qr-code', qr)
+  if (props.showBarcodes) {
+    emit('edit-barcode', item)
+  } else {
+    emit('edit-qr-code', item)
+  }
 }
 
-// Supprimer un QR code
-const deleteQrCode = async (qr) => {
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer le QR code "${qr.nomProduit}" ?`)) {
+// Supprimer un item
+const deleteItem = async (item) => {
+  const itemType = props.showBarcodes ? 'code-barre' : 'QR code'
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer le ${itemType} "${item.nomProduit}" ?`)) {
     return
   }
 
   try {
     isDeleting.value = true
     
-    const response = await $fetch(`/api/qrcodes?id=${qr.id}`, {
+    const endpoint = props.showBarcodes ? '/api/barcodes' : '/api/qrcodes'
+    const response = await $fetch(`${endpoint}?id=${item.id}`, {
       method: 'DELETE'
     })
     
     if (response.success) {
       showDetailModal.value = false
       emit('refresh-list')
-      showNotification('QR Code supprimé avec succès !', 'success')
+      showNotification(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} supprimé avec succès !`, 'success')
     }
   } catch (error) {
     console.error('Erreur lors de la suppression:', error)
-    showNotification('Erreur lors de la suppression du QR code', 'error')
+    const itemType = props.showBarcodes ? 'code-barre' : 'QR code'
+    showNotification(`Erreur lors de la suppression du ${itemType}`, 'error')
   } finally {
     isDeleting.value = false
   }
@@ -405,9 +441,13 @@ const formatDate = (dateString) => {
   })
 }
 
-// Obtenir le label du type de QR code
-const getQrTypeLabel = (qrType) => {
-  switch (qrType) {
+// Obtenir le label du type d'item (QR code ou code-barre)
+const getItemTypeLabel = (item) => {
+  if (props.showBarcodes) {
+    return 'Code-barre'
+  }
+  
+  switch (item.qrType) {
     case 'raw':
       return 'Brut'
     case 'result':
@@ -417,9 +457,13 @@ const getQrTypeLabel = (qrType) => {
   }
 }
 
-// Obtenir la classe CSS du type de QR code
-const getQrTypeClass = (qrType) => {
-  switch (qrType) {
+// Obtenir la classe CSS du type d'item
+const getItemTypeClass = (item) => {
+  if (props.showBarcodes) {
+    return 'qr-badge--barcode'
+  }
+  
+  switch (item.qrType) {
     case 'raw':
       return 'qr-badge--raw'
     case 'result':
@@ -719,6 +763,11 @@ const visiblePages = computed(() => {
 
 .qr-badge--result {
   background-color: var(--color-success);
+  color: var(--color-secondary);
+}
+
+.qr-badge--barcode {
+  background-color: var(--color-warning);
   color: var(--color-secondary);
 }
 

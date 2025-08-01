@@ -7,10 +7,10 @@
         <div class="page-header__content">
           
           <h1 class="page-header__title">
-            Créez vos Codes QR
+            Créez vos Codes QR et Codes-barres
           </h1>
           <p class="page-header__description">
-            Interface pour gérer vos codes QR facilement
+            Interface pour gérer vos codes QR et codes-barres facilement
           </p>
         </div>
       </div>
@@ -26,7 +26,7 @@
                   <FontAwesomeIcon icon="fa-plus" />
                 </div>
                 <div class="card-header__text">
-                  <h2 class="card__title">{{ editMode ? 'Modifier Code QR' : 'Nouveau Code QR' }}</h2>
+                  <h2 class="card__title">{{ editMode ? `Modifier ${isBarcodeMode ? 'Code-barre' : 'Code QR'}` : `Nouveau ${isBarcodeMode ? 'Code-barre' : 'Code QR'}` }}</h2>
                   <p class="card__subtitle">{{ editMode ? 'Modifiez les informations du produit' : 'Remplissez les informations du produit' }}</p>
                 </div>
               </div>
@@ -35,8 +35,13 @@
               <QrForm 
                 :edit-mode="editMode"
                 :qr-code-to-edit="qrCodeToEdit"
+                :barcode-to-edit="barcodeToEdit"
+                :is-barcode-mode="isBarcodeMode"
                 @qr-created="handleQrCreated"
                 @qr-updated="handleQrUpdated"
+                @barcode-created="handleBarcodeCreated"
+                @barcode-updated="handleBarcodeUpdated"
+                @mode-changed="handleModeChanged"
               />
               
               <!-- Bouton annuler en mode édition -->
@@ -63,17 +68,20 @@
                 </div>
                 <div class="card-header__text">
                   <h2 class="card__title">Historique</h2>
-                  <p class="card__subtitle">{{ qrCodes.length }} codes générés</p>
+                  <p class="card__subtitle">{{ (isBarcodeMode ? barcodes : qrCodes).length }} {{ isBarcodeMode ? 'codes-barres' : 'codes' }} générés</p>
                 </div>
               </div>
             </div>
             <div class="card__body">
               <QrList 
                 :qr-codes="qrCodes" 
+                :barcodes="barcodes"
                 :pagination="pagination"
                 :is-loading="loading"
-                @refresh-list="() => fetchQrCodes(1)"
+                :show-barcodes="isBarcodeMode"
+                @refresh-list="() => isBarcodeMode ? fetchBarcodes(1) : fetchQrCodes(1)"
                 @edit-qr-code="handleEditQrCode"
+                @edit-barcode="handleEditBarcode"
                 @change-page="handleChangePage"
               />
             </div>
@@ -109,30 +117,32 @@ defineOptions({
 
 // État réactif
 const qrCodes = ref([])
+const barcodes = ref([])
 const loading = ref(false)
 const editMode = ref(false)
 const qrCodeToEdit = ref(null)
+const barcodeToEdit = ref(null)
 const currentPage = ref(1)
 const pagination = ref(null)
+const isBarcodeMode = ref(false)
 
-// Log de débogage pour vérifier que les composants sont disponibles
-console.log('Page mounted, checking components availability')
+
 
 // Statistiques calculées
 const stats = computed(() => [
   {
     label: 'Codes Créés',
-    value: qrCodes.value.length,
+    value: qrCodes.value.length + barcodes.value.length,
     icon: 'fa-qrcode'
   },
   {
     label: 'Types Produits',
-    value: new Set(qrCodes.value.map(qr => qr.typeProduit)).size,
+    value: new Set([...qrCodes.value.map(qr => qr.typeProduit), ...barcodes.value.map(bc => bc.categorie)]).size,
     icon: 'fa-tag'
   },
   {
     label: 'Valeur Totale',
-    value: `${qrCodes.value.reduce((sum, qr) => sum + (qr.prixVente || 0), 0).toLocaleString()} FCFA`,
+    value: `${(qrCodes.value.reduce((sum, qr) => sum + (qr.prixVente || 0), 0) + barcodes.value.reduce((sum, bc) => sum + (bc.prixVente || 0), 0)).toLocaleString()} FCFA`,
     icon: 'fa-dollar-sign'
   }
 ])
@@ -141,13 +151,10 @@ const stats = computed(() => [
 const fetchQrCodes = async (page = 1) => {
   try {
     loading.value = true
-    console.log('Fetching QR codes for page:', page)
     const response = await $fetch(`/api/qrcodes?page=${page}&limit=5`)
-    qrCodes.value = response.data || []
+    qrCodes.value = response.qrCodes || []
     pagination.value = response.pagination
     currentPage.value = page
-    console.log('QR codes loaded:', qrCodes.value)
-    console.log('Pagination:', pagination.value)
   } catch (error) {
     console.error('Erreur lors du chargement des QR codes:', error)
   } finally {
@@ -155,8 +162,21 @@ const fetchQrCodes = async (page = 1) => {
   }
 }
 
-const handleQrCreated = (newQrCode) => {
-  console.log('New QR code created:', newQrCode)
+const fetchBarcodes = async (page = 1) => {
+  try {
+    loading.value = true
+    const response = await $fetch(`/api/barcodes?page=${page}&limit=5`)
+    barcodes.value = response.barcodes || []
+    pagination.value = response.pagination
+    currentPage.value = page
+  } catch (error) {
+    console.error('Erreur lors du chargement des codes-barres:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleQrCreated = (_newQrCode) => {
   // Recharger la première page après création
   fetchQrCodes(1)
   
@@ -164,8 +184,7 @@ const handleQrCreated = (newQrCode) => {
   showNotification('QR Code créé avec succès !', 'success')
 }
 
-const handleQrUpdated = (updatedQrCode) => {
-  console.log('QR code updated:', updatedQrCode)
+const handleQrUpdated = (_updatedQrCode) => {
   // Recharger la page courante après modification
   fetchQrCodes(currentPage.value)
   
@@ -176,22 +195,59 @@ const handleQrUpdated = (updatedQrCode) => {
   showNotification('QR Code modifié avec succès !', 'success')
 }
 
+const handleBarcodeCreated = (_newBarcode) => {
+  // Recharger la première page après création
+  fetchBarcodes(1)
+  
+  // Notification simple
+  showNotification('Code-barre créé avec succès !', 'success')
+}
+
+const handleBarcodeUpdated = (_updatedBarcode) => {
+  // Recharger la page courante après modification
+  fetchBarcodes(currentPage.value)
+  
+  // Sortir du mode édition
+  exitEditMode()
+  
+  // Notification simple
+  showNotification('Code-barre modifié avec succès !', 'success')
+}
+
 const handleEditQrCode = (qrCode) => {
-  console.log('Editing QR code:', qrCode)
   qrCodeToEdit.value = qrCode
+  barcodeToEdit.value = null
+  isBarcodeMode.value = false
   editMode.value = true
-  console.log('Edit mode activated:', editMode.value, qrCodeToEdit.value)
+}
+
+const handleEditBarcode = (barcode) => {
+  barcodeToEdit.value = barcode
+  qrCodeToEdit.value = null
+  isBarcodeMode.value = true
+  editMode.value = true
 }
 
 const exitEditMode = () => {
   editMode.value = false
   qrCodeToEdit.value = null
+  barcodeToEdit.value = null
 }
 
 const handleChangePage = (page) => {
-  console.log('Changing to page:', page)
-  fetchQrCodes(page)
+  if (isBarcodeMode.value) {
+    fetchBarcodes(page)
+  } else {
+    fetchQrCodes(page)
+  }
 }
+
+const handleModeChanged = (isBarcode) => {
+  isBarcodeMode.value = isBarcode
+  exitEditMode()
+}
+
+
 
 // Notification simple
 const showNotification = (message, type = 'info') => {
@@ -207,8 +263,8 @@ const showNotification = (message, type = 'info') => {
 
 // Lifecycle
 onMounted(() => {
-  console.log('Page mounted, components should be visible')
   fetchQrCodes()
+  fetchBarcodes()
 })
 
 // SEO
@@ -231,8 +287,15 @@ useHead({
 
 /* ===== PAGE HEADER ===== */
 .page-header {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
   margin-bottom: var(--space-12);
+}
+
+.page-header__content {
+  text-align: center;
 }
 
 .page-header__content {

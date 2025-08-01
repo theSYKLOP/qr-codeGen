@@ -6,18 +6,5 @@
     "PRISMA_CLI_BINARY_TARGETS": "rhel-openssl-3.0.x",
     "NODE_OPTIONS": "--max-old-space-size=4096"
   },
-  "regions": ["iad1"],
-  "functions": {
-    "server/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "env": {
-    "DATABASE_URL": "@database_url"
-  },
-  "build": {
-    "env": {
-      "DATABASE_URL": "@database_url"
-    }
-  }
+  "regions": ["iad1"]
 } 

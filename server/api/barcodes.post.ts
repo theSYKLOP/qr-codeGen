@@ -1,4 +1,4 @@
-// server/api/qrcodes.post.ts
+// server/api/barcodes.post.ts
 import { defineEventHandler, readBody, createError } from 'h3'
 import prisma from '~/lib/prisma'
 
@@ -6,31 +6,28 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
     const { 
-      typeProduit, 
       nomProduit, 
       franchise, 
+      reference,
       prixVente, 
-      poids, 
-      unitePoids, 
+      categorie,
       fournisseur = 'PROXI NOVA',
-      qrType = 'raw',
       codePng = '',
-      userId 
+      userId: _userId 
     } = body
 
     // Validation des champs requis
-    if (!typeProduit || !nomProduit || !franchise || !prixVente || !poids || !unitePoids) {
+    if (!nomProduit || !franchise || !reference || !prixVente || !categorie) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Tous les champs sont requis',
         data: { 
           missing: [
-            !typeProduit && 'typeProduit',
             !nomProduit && 'nomProduit',
             !franchise && 'franchise',
+            !reference && 'reference',
             !prixVente && 'prixVente',
-            !poids && 'poids',
-            !unitePoids && 'unitePoids'
+            !categorie && 'categorie'
           ].filter(Boolean)
         }
       })
@@ -38,19 +35,11 @@ export default defineEventHandler(async (event) => {
 
     // Validation des types de données
     const prixVenteNum = parseInt(prixVente)
-    const poidsNum = parseFloat(poids)
     
     if (isNaN(prixVenteNum) || prixVenteNum <= 0) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Prix de vente invalide'
-      })
-    }
-    
-    if (isNaN(poidsNum) || poidsNum <= 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Poids invalide'
       })
     }
 
@@ -72,22 +61,22 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const qrCode = await prisma.qrCode.create({
+    // Créer le code-barre
+    const barcode = await prisma.barcode.create({
       data: {
-        typeProduit,
         nomProduit,
         franchise,
+        reference,
         prixVente: prixVenteNum,
-        poids: poidsNum,
-        unitePoids,
+        categorie,
         fournisseur,
-        qrType,
         codePng,
-        userId: userId || defaultUser.id
+        userId: defaultUser.id
       },
       include: {
         user: {
           select: {
+            id: true,
             nom: true,
             prenom: true,
             email: true
@@ -98,15 +87,21 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      qrCode
+      message: 'Code-barre créé avec succès',
+      barcode
     }
+
   } catch (error) {
-    console.error('Erreur lors de la création du QR code:', error)
+    console.error('Erreur lors de la création du code-barre:', error)
+    
+    if ((error as any).statusCode) {
+      throw error
+    }
+    
     throw createError({
       statusCode: 500,
       statusMessage: 'Erreur serveur',
       data: { error: error instanceof Error ? error.message : 'Erreur inconnue' }
     })
   }
-})
-  
+}) 
