@@ -19,12 +19,28 @@ model User {
   prenom    String?
   role      Role     @default(USER)
   isActive  Boolean  @default(true)
+  a2f       Boolean  @default(false) // Authentification à deux facteurs
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   // 🔗 RELATIONS
   qrCodes   QrCode[]
   barcodes  Barcode[]
+
+  // Auto-référencement vers l'admin parrain (optionnel)
+  adminId   String?
+  admin     User?     @relation("UserAdmin", fields: [adminId], references: [id])
+  subordinates User[] @relation("UserAdmin")
+
+  // Référence au code de parrainage utilisé
+  referralCodeId String? @unique
+  referralCode   ReferralCode? @relation("ReferralUsed", fields: [referralCodeId], references: [id])
+
+  // Codes générés si ADMIN
+  referralsGenerated ReferralCode[] @relation("AdminReferralCodes")
+
+  // Opposite relation for RoleConfig.configuredBy
+  roleConfigsConfigured RoleConfig[] @relation("UserConfiguredRoleConfigs")
   
   @@map("users")
 }
@@ -72,5 +88,29 @@ model Barcode {
 // 📊 ENUM POUR LES RÔLES
 enum Role {
   USER
+  MODERATEUR
   ADMIN
+}
+
+// 🔐 Configuration de rôles persistée
+model RoleConfig {
+  id             String   @id @default(cuid())
+  role           Role     @unique
+  permissions    Json
+  configuredById String?
+  configuredBy   User?    @relation("UserConfiguredRoleConfigs", fields: [configuredById], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// 🧾 Codes de parrainage
+model ReferralCode {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  adminId       String
+  admin         User     @relation("AdminReferralCodes", fields: [adminId], references: [id])
+  usedByUser    User?    @relation("ReferralUsed")
+  usedAt        DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
 }

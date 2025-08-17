@@ -23,7 +23,7 @@
         </button>
     </div>
 
-    <form @submit.prevent="props.isBarcodeMode ? generateBarcode() : generateQr()" class="form">
+    <form class="form" @submit.prevent="props.isBarcodeMode ? generateBarcode() : generateQr()">
       
       <!-- Type de produit (QR) ou Catégorie (Barcode) -->
       <div class="form-group">
@@ -54,20 +54,18 @@
           type="text"
           class="form-input"
           placeholder="Ex: Banane"
-          required
-        />
+          required>
       </div>
 
       <!-- Référence (Code-barre uniquement) -->
       <div v-if="props.isBarcodeMode" class="form-group">
         <label class="form-label required">Référence du produit</label>
-        <input 
+                <input 
           v-model="formData.reference"
           type="text"
           class="form-input"
           placeholder="Ex: PROD-001-2024"
-          required
-        />
+                  required>
       </div>
 
       <!-- Franchise -->
@@ -78,8 +76,7 @@
           type="text"
           class="form-input"
           placeholder="Ex: PRIX IMPORT, Carrefour..."
-          required
-        />
+          required>
       </div>
 
       <!-- Prix de vente -->
@@ -90,8 +87,7 @@
           type="number"
           class="form-input"
           placeholder="Ex: 125000"
-          required
-        />
+          required>
       </div>
 
       <!-- Poids avec unité (QR uniquement) -->
@@ -104,8 +100,7 @@
             step="0.01"
             class="form-input"
             placeholder="Ex: 1.5"
-            required
-          />
+            required>
           <select 
             v-model="formData.unitePoids"
             class="form-select form-select--small"
@@ -127,8 +122,7 @@
         <input 
           v-model="formData.fournisseur"
           type="text"
-          class="form-input"
-        />
+          class="form-input">
       </div>
 
       <!-- Type de QR Code (QR uniquement) -->
@@ -162,8 +156,7 @@
           type="text"
           class="form-input"
           placeholder="Ex: Jean Dupont"
-          required
-        />
+          required>
       </div>
 
       <!-- Boutons d'action -->
@@ -171,8 +164,8 @@
         <button 
           type="button"
           class="btn btn--secondary"
-          @click="resetForm"
           :disabled="isGenerating"
+          @click="resetForm"
         >
           <FontAwesomeIcon icon="fa-refresh" class="btn-icon" />
           Réinitialiser
@@ -184,7 +177,7 @@
           :disabled="isGenerating || isPreloading"
         >
           <FontAwesomeIcon v-if="!isGenerating && !isPreloading" :icon="props.isBarcodeMode ? 'fa-barcode' : 'fa-qrcode'" class="btn-icon" />
-          <div v-if="isGenerating || isPreloading" class="loading-spinner"></div>
+          <div v-if="isGenerating || isPreloading" class="loading-spinner" />
           {{ isGenerating ? 'Génération...' : isPreloading ? 'Préparation...' : (props.editMode ? 'Sauvegarder' : (props.isBarcodeMode ? 'Générer Code-barre' : 'Générer QR Code')) }}
         </button>
       </div>
@@ -207,11 +200,16 @@
           <div class="modal-body">
             <!-- QR Code/Code-barre généré -->
             <div class="qr-display">
-              <img 
+              <NuxtImg
                 v-if="generatedQrCode"
-                :src="generatedQrCode" 
+                :src="generatedQrCode"
                 :alt="props.isBarcodeMode ? 'Code-barre généré' : 'QR Code généré'"
                 class="qr-image"
+                width="200"
+                height="200"
+                loading="lazy"
+                decoding="async"
+                sizes="200px"
               />
             </div>
 
@@ -243,7 +241,7 @@
             <!-- Indicateur de progression -->
             <div v-if="isSaving" class="progress-indicator">
               <div class="progress-bar">
-                <div class="progress-fill"></div>
+                <div class="progress-fill" />
               </div>
               <p class="progress-text">Compression et sauvegarde en cours...</p>
             </div>
@@ -252,8 +250,8 @@
             <div class="modal-actions">
               <button 
                 class="btn btn--secondary"
-                @click="downloadQr"
                 :disabled="isSaving"
+                @click="downloadQr"
               >
                 <FontAwesomeIcon icon="fa-download" class="btn-icon" />
                 Télécharger PNG
@@ -261,11 +259,11 @@
               
               <button 
                 class="btn btn--primary"
-                @click="props.isBarcodeMode ? saveBarcodeToDatabase() : saveQrToDatabase()"
-                :disabled="isSaving"
+                 :disabled="isSaving"
+                 @click="props.isBarcodeMode ? saveBarcodeToDatabase() : saveQrToDatabase()"
               >
                 <FontAwesomeIcon v-if="!isSaving" icon="fa-check" class="btn-icon" />
-                <div v-if="isSaving" class="loading-spinner"></div>
+                <div v-if="isSaving" class="loading-spinner" />
                 {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
               </button>
             </div>
@@ -277,8 +275,23 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, watch, onBeforeUnmount } from 'vue'
 import QRCode from 'qrcode'
+// RBAC via helper
+const toastApi = useToast()
+const toastError = (...args) => toastApi.error(...args)
+const toastSuccess = (...args) => toastApi.success(...args)
+const { requirePermission } = usePermissionToasts()
+
+// Écoute des mises à jour RBAC pour refléter immédiatement les permissions
+const rbacVersion = ref(0)
+const bumpRBAC = () => { rbacVersion.value++ }
+onMounted(() => {
+  if (import.meta.client) window.addEventListener('rbac-updated', bumpRBAC)
+})
+onBeforeUnmount(() => {
+  if (import.meta.client) window.removeEventListener('rbac-updated', bumpRBAC)
+})
 
 // Props et émissions
 const props = defineProps({
@@ -462,6 +475,7 @@ const barcodeCache = new Map()
 // Générer le QR Code avec optimisations
 const generateQr = async () => {
   try {
+    if (!requirePermission('qr.create', 'Permission insuffisante', 'Vous n\'avez pas la permission de créer un QR')) return
     isGenerating.value = true
     
     const qrData = {
@@ -514,7 +528,7 @@ const generateQr = async () => {
     
   } catch (error) {
     console.error('Erreur génération QR:', error)
-    alert('Impossible de générer le QR code')
+    toastError('Erreur', 'Impossible de générer le QR code')
   } finally {
     isGenerating.value = false
   }
@@ -523,6 +537,7 @@ const generateQr = async () => {
 // Générer le Code-barre avec JsBarcode
 const generateBarcode = async () => {
   try {
+    if (!requirePermission('barcode.create', 'Permission insuffisante', 'Vous n\'avez pas la permission de créer un code-barre')) return
     isGenerating.value = true
     
     // Vérifier le cache
@@ -559,7 +574,7 @@ const generateBarcode = async () => {
     
   } catch (error) {
     console.error('Erreur génération code-barre:', error)
-    alert('Impossible de générer le code-barre')
+    toastError('Erreur', 'Impossible de générer le code-barre')
   } finally {
     isGenerating.value = false
   }
@@ -647,15 +662,14 @@ const saveQrToDatabase = async () => {
       emit('qr-created', response.qrCode)
     }
     
+    // Fermer, notifier et réinitialiser
     showQrModal.value = false
+    toastSuccess(props.editMode ? 'QR Code modifié avec succès !' : 'QR Code sauvegardé avec succès !')
     resetForm()
-    
-    // Notification de succès
-    showNotification(props.editMode ? 'QR Code modifié avec succès !' : 'QR Code sauvegardé avec succès !', 'success')
     
   } catch (error) {
     console.error('Erreur sauvegarde:', error)
-    showNotification('Impossible de sauvegarder le QR code', 'error')
+    toastError('Erreur', 'Impossible de sauvegarder le QR code')
   } finally {
     isSaving.value = false
   }
@@ -697,31 +711,20 @@ const saveBarcodeToDatabase = async () => {
       emit('barcode-created', response.barcode)
     }
     
+    // Fermer, notifier et réinitialiser
     showQrModal.value = false
+    toastSuccess(props.editMode ? 'Code-barre modifié avec succès !' : 'Code-barre sauvegardé avec succès !')
     resetForm()
-    
-    // Notification de succès
-    showNotification(props.editMode ? 'Code-barre modifié avec succès !' : 'Code-barre sauvegardé avec succès !', 'success')
     
   } catch (error) {
     console.error('Erreur sauvegarde code-barre:', error)
-    showNotification('Impossible de sauvegarder le code-barre', 'error')
+    toastError('Erreur', 'Impossible de sauvegarder le code-barre')
   } finally {
     isSaving.value = false
   }
 }
 
-// Afficher une notification
-const showNotification = (message, type = 'info') => {
-  const notification = document.createElement('div')
-  notification.className = `notification notification--${type}`
-  notification.textContent = message
-  document.body.appendChild(notification)
-  
-  setTimeout(() => {
-    notification.remove()
-  }, 3000)
-}
+// Remplacé par toasts
 
 // Description du type de QR code
 const getQrTypeDescription = () => {

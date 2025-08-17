@@ -9,8 +9,7 @@
           v-model="searchTerm"
           type="text"
           class="search-input"
-          placeholder="Rechercher un produit..."
-        />
+          placeholder="Rechercher un produit...">
       </div>
       
       <select
@@ -30,7 +29,7 @@
 
     <!-- Loader de chargement -->
     <div v-if="isLoading" class="loading-section">
-      <div class="loading-spinner-large"></div>
+      <div class="loading-spinner-large" />
       <p class="loading-text">Chargement des QR codes...</p>
     </div>
 
@@ -90,10 +89,15 @@
 
               <!-- QR Code/Code-barre miniature -->
               <div class="qr-preview">
-                <img 
-                  :src="item.codePng" 
+                <NuxtImg
+                  :src="item.codePng"
                   :alt="`${props.showBarcodes ? 'Code-barre' : 'QR Code'} ${item.nomProduit}`"
                   class="qr-mini"
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                  sizes="48px"
                 />
                 <div class="qr-overlay">
                   <FontAwesomeIcon icon="fa-eye" />
@@ -105,7 +109,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="pagination-section" v-if="pagination && pagination.totalPages > 1 && !isLoading">
+    <div v-if="pagination && pagination.totalPages > 1 && !isLoading" class="pagination-section">
       <div class="pagination-info">
         <span class="pagination-text">
           Page {{ pagination.page }} sur {{ pagination.totalPages }}
@@ -150,7 +154,7 @@
     </div>
 
     <!-- Bouton rafraîchir -->
-    <div class="refresh-section" v-if="!isLoading">
+    <div v-if="!isLoading" class="refresh-section">
       <button 
         class="btn btn--outline btn--block"
         @click="$emit('refresh-list')"
@@ -174,13 +178,18 @@
             </button>
           </div>
 
-          <div class="modal-body" v-if="selectedItem">
+          <div v-if="selectedItem" class="modal-body">
             <!-- QR Code/Code-barre grand format -->
             <div class="qr-showcase">
-              <img 
-                :src="selectedItem.codePng" 
+              <NuxtImg
+                :src="selectedItem.codePng"
                 :alt="`${props.showBarcodes ? 'Code-barre' : 'QR Code'} ${selectedItem.nomProduit}`"
                 class="qr-large"
+                width="250"
+                height="250"
+                loading="lazy"
+                decoding="async"
+                sizes="250px"
               />
             </div>
 
@@ -269,6 +278,7 @@
               
               <button 
                 class="btn btn--primary"
+                :class="{ 'btn--disabled': !canEdit }"
                 @click="editItem(selectedItem)"
               >
                 <FontAwesomeIcon icon="fa-edit" class="btn-icon" />
@@ -277,11 +287,11 @@
               
               <button 
                 class="btn btn--danger"
+                :class="{ 'btn--disabled': isDeleting || !canDelete }"
                 @click="deleteItem(selectedItem)"
-                :disabled="isDeleting"
               >
                 <FontAwesomeIcon v-if="!isDeleting" icon="fa-trash" class="btn-icon" />
-                <div v-if="isDeleting" class="loading-spinner"></div>
+                <div v-if="isDeleting" class="loading-spinner" />
                 {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
               </button>
             </div>
@@ -293,7 +303,27 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+// RBAC via helper
+const toastApi = useToast()
+const toastError = (...args) => toastApi.error(...args)
+const toastSuccess = (...args) => toastApi.success(...args)
+const { requirePermission } = usePermissionToasts()
+const { can } = useRBAC()
+
+// Réactivité RBAC immédiate après login/logout (sans refresh)
+const rbacVersion = ref(0)
+const bumpRBAC = () => { rbacVersion.value++ }
+onMounted(() => {
+  if (import.meta.client) window.addEventListener('rbac-updated', bumpRBAC)
+})
+onBeforeUnmount(() => {
+  if (import.meta.client) window.removeEventListener('rbac-updated', bumpRBAC)
+})
+
+// Permissions calculées (utilisées pour le style des boutons)
+const canEdit = computed(() => { void rbacVersion.value; return can('items.edit') })
+const canDelete = computed(() => { void rbacVersion.value; return can('items.delete') })
 
 // Props
 const props = defineProps({
@@ -381,6 +411,7 @@ const downloadItem = (item) => {
 
 // Modifier un item
 const editItem = (item) => {
+  if (!requirePermission('items.edit', 'Permission insuffisante', 'Vous ne pouvez pas modifier cet élément')) return
   showDetailModal.value = false
   if (props.showBarcodes) {
     emit('edit-barcode', item)
@@ -392,6 +423,7 @@ const editItem = (item) => {
 // Supprimer un item
 const deleteItem = async (item) => {
   const itemType = props.showBarcodes ? 'code-barre' : 'QR code'
+  if (!requirePermission('items.delete', 'Permission insuffisante', 'Vous ne pouvez pas supprimer cet élément')) return
   if (!confirm(`Êtes-vous sûr de vouloir supprimer le ${itemType} "${item.nomProduit}" ?`)) {
     return
   }
@@ -407,28 +439,18 @@ const deleteItem = async (item) => {
     if (response.success) {
       showDetailModal.value = false
       emit('refresh-list')
-      showNotification(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} supprimé avec succès !`, 'success')
+      toastSuccess(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} supprimé avec succès !`)
     }
   } catch (error) {
     console.error('Erreur lors de la suppression:', error)
     const itemType = props.showBarcodes ? 'code-barre' : 'QR code'
-    showNotification(`Erreur lors de la suppression du ${itemType}`, 'error')
+    toastError('Erreur', `Erreur lors de la suppression du ${itemType}`)
   } finally {
     isDeleting.value = false
   }
 }
 
-// Afficher une notification
-const showNotification = (message, type = 'info') => {
-  const notification = document.createElement('div')
-  notification.className = `notification notification--${type}`
-  notification.textContent = message
-  document.body.appendChild(notification)
-  
-  setTimeout(() => {
-    notification.remove()
-  }, 3000)
-}
+// Remplacé par toasts
 
 // Formater la date
 const formatDate = (dateString) => {
@@ -979,6 +1001,12 @@ const visiblePages = computed(() => {
   border-color: #dc2626;
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+/* Style visuel pour boutons logiquement désactivés par RBAC */
+.btn--disabled {
+  opacity: 0.6;
+  pointer-events: auto; /* Permet le clic pour afficher le toast explicatif */
 }
 
 .btn--small {

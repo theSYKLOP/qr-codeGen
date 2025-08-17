@@ -22,9 +22,12 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js",
     "pre-commit": "node scripts/pre-commit.js",
     "check": "node scripts/pre-commit.js",
-    "build-quick": "prisma generate && nuxt build --silent"
+    "build-quick": "prisma generate && nuxt build --silent",
+    "deploy:vercel": "node scripts/deploy.mjs",
+    "test:deploy": "node scripts/test-deployment.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
@@ -37,14 +40,23 @@
     "@nuxt/ui": "^3.3.0",
     "@prisma/client": "^6.13.0",
     "@prisma/nuxt": "^0.3.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@vueuse/core": "^13.6.0",
+    "bcryptjs": "^3.0.2",
     "eslint": "^9.32.0",
     "jsbarcode": "^3.12.1",
+    "jsonwebtoken": "^9.0.2",
     "nuxt": "^4.0.1",
     "prisma": "^6.13.0",
     "qrcode": "^1.5.4",
     "vue": "^3.5.18",
     "vue-qrcode": "^2.2.2",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@nuxt/image": "^1.11.0",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1"
   }
 }

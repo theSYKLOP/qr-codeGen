@@ -1,4 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+// Import runtime compatible ESM (Nuxt/Nitro) via createRequire
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { PrismaClient } = require('@prisma/client') as { PrismaClient: any }
 
 const prismaClientSingleton = () => {
   return new PrismaClient({

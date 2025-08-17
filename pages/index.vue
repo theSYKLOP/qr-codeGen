@@ -1,519 +1,491 @@
-<!-- app/pages/index.vue -->
+<!-- Page vitrine - Accueil -->
 <template>
-  <div class="page">
-    <div class="container">
-      <!-- En-tête de page -->
-      <div class="page-header">
-        <div class="page-header__content">
-          
-          <h1 class="page-header__title">
-            Créez vos Codes QR et Codes-barres
-          </h1>
-          <p class="page-header__description">
-            Interface pour gérer vos codes QR et codes-barres facilement
-          </p>
-        </div>
-      </div>
-
-      <!-- Layout principal -->
-      <div class="main-layout">
-        <!-- Section formulaire -->
-        <section class="main-layout__form">
-          <div class="card card--elevated">
-            <div class="card__header">
-              <div class="card-header">
-                <div class="card-header__icon">
-                  <FontAwesomeIcon icon="fa-plus" />
-                </div>
-                <div class="card-header__text">
-                  <h2 class="card__title">{{ editMode ? `Modifier ${isBarcodeMode ? 'Code-barre' : 'Code QR'}` : `Nouveau ${isBarcodeMode ? 'Code-barre' : 'Code QR'}` }}</h2>
-                  <p class="card__subtitle">{{ editMode ? 'Modifiez les informations du produit' : 'Remplissez les informations du produit' }}</p>
-                </div>
-              </div>
-            </div>
-            <div class="card__body">
-              <QrForm 
-                :edit-mode="editMode"
-                :qr-code-to-edit="qrCodeToEdit"
-                :barcode-to-edit="barcodeToEdit"
-                :is-barcode-mode="isBarcodeMode"
-                @qr-created="handleQrCreated"
-                @qr-updated="handleQrUpdated"
-                @barcode-created="handleBarcodeCreated"
-                @barcode-updated="handleBarcodeUpdated"
-                @mode-changed="handleModeChanged"
-              />
-              
-              <!-- Bouton annuler en mode édition -->
-              <div v-if="editMode" class="edit-mode-actions">
+  <div class="landing-page">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero__content">
+          <div class="hero__text">
+            <h1 class="hero__title">
+              Générez vos <span class="text-highlight">Codes QR</span> et <span class="text-highlight">Codes-barres</span> en toute simplicité
+            </h1>
+            <p class="hero__description">
+              Interface moderne et intuitive pour créer, gérer et organiser vos codes QR et codes-barres. 
+              Parfait pour les commerces, entrepôts et gestion de stocks.
+            </p>
+            <div class="hero__actions">
+              <!-- Actions pour utilisateurs non connectés -->
+              <template v-if="!authState.isAuthenticated">
                 <button 
-                  class="btn btn--outline btn--block"
-                  @click="exitEditMode"
+                  class="btn btn--primary btn--large"
+                  @click="navigateToLogin"
                 >
-                  <FontAwesomeIcon icon="fa-times" class="btn-icon" />
-                  Annuler la modification
+                  <FontAwesomeIcon icon="fa-rocket" class="btn-icon" />
+                  Commencer maintenant
                 </button>
-              </div>
+                <button 
+                  class="btn btn--outline btn--large"
+                  @click="scrollToFeatures"
+                >
+                  <FontAwesomeIcon icon="fa-info-circle" class="btn-icon" />
+                  En savoir plus
+                </button>
+              </template>
+              
+              <!-- Actions pour utilisateurs connectés -->
+              <template v-else>
+                <button 
+                  class="btn btn--primary btn--large"
+                  @click="navigateToDashboard"
+                >
+                  <FontAwesomeIcon icon="fa-tachometer-alt" class="btn-icon" />
+                  Accéder au Dashboard
+                </button>
+                <button 
+                  class="btn btn--outline btn--large"
+                  @click="scrollToFeatures"
+                >
+                  <FontAwesomeIcon icon="fa-info-circle" class="btn-icon" />
+                  En savoir plus
+                </button>
+              </template>
             </div>
           </div>
-        </section>
-
-        <!-- Section liste -->
-        <section class="main-layout__list">
-          <div class="card card--elevated">
-            <div class="card__header">
-              <div class="card-header">
-                <div class="card-header__icon">
-                  <FontAwesomeIcon icon="fa-list" />
-                </div>
-                <div class="card-header__text">
-                  <h2 class="card__title">Historique</h2>
-                  <p class="card__subtitle">{{ (isBarcodeMode ? barcodes : qrCodes).length }} {{ isBarcodeMode ? 'codes-barres' : 'codes' }} générés</p>
-                </div>
-              </div>
-            </div>
-            <div class="card__body">
-              <QrList 
-                :qr-codes="qrCodes" 
-                :barcodes="barcodes"
-                :pagination="pagination"
-                :is-loading="loading"
-                :show-barcodes="isBarcodeMode"
-                @refresh-list="() => isBarcodeMode ? fetchBarcodes(1) : fetchQrCodes(1)"
-                @edit-qr-code="handleEditQrCode"
-                @edit-barcode="handleEditBarcode"
-                @change-page="handleChangePage"
-              />
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Section statistiques -->
-      <section class="stats-section">
-        <div class="stats-grid">
-          <div class="stat-card" v-for="stat in stats" :key="stat.label">
-            <div class="stat-card__icon">
-              <FontAwesomeIcon :icon="stat.icon" />
-            </div>
-            <div class="stat-card__content">
-              <div class="stat-card__value">{{ stat.value }}</div>
-              <div class="stat-card__label">{{ stat.label }}</div>
+          <div class="hero__visual">
+            <div class="qr-demo">
+              <img src="/scan.png" alt="Scanner QR moderne" class="qr-demo__image" width="640" height="360" loading="lazy" decoding="async" />
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Fonctionnalités principales</h2>
+          <p class="section-subtitle">Tout ce dont vous avez besoin pour gérer vos codes</p>
+        </div>
+        
+          <div class="features-grid">
+          <div v-for="feature in features" :key="feature.title" class="feature-card">
+            <div class="feature-card__icon">
+              <FontAwesomeIcon :icon="feature.icon" />
+            </div>
+            <h3 class="feature-card__title">{{ feature.title }}</h3>
+            <p class="feature-card__description">{{ feature.description }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section - Affichée uniquement pour les utilisateurs non connectés -->
+    <section v-if="!authState.isAuthenticated" class="cta">
+      <div class="container">
+        <div class="cta__content">
+          <h2 class="cta__title">Prêt à commencer ?</h2>
+          <p class="cta__description">
+            Rejoignez des milliers d'utilisateurs qui font confiance à QR-Add pour leurs besoins en codes QR et codes-barres.
+          </p>
+          <button 
+            class="btn btn--cta"
+            @click="navigateToLogin"
+          >
+            <FontAwesomeIcon icon="fa-user-plus" class="btn-icon" />
+            Créer un compte
+          </button>
+        </div>
+        
+        <!-- Éléments décoratifs -->
+        <div class="cta__decorations">
+          <div class="cta__qr-code">
+            <FontAwesomeIcon icon="fa-qrcode" />
+          </div>
+          <div class="cta__barcode">
+            <FontAwesomeIcon icon="fa-barcode" />
+          </div>
+          <div class="cta__dots">
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-// Définition du nom du composant pour résoudre l'erreur ESLint
+// Définition du nom du composant
 defineOptions({
-  name: 'QrGeneratorPage'
+  name: 'LandingPage'
 })
 
-// État réactif
-const qrCodes = ref([])
-const barcodes = ref([])
-const loading = ref(false)
-const editMode = ref(false)
-const qrCodeToEdit = ref(null)
-const barcodeToEdit = ref(null)
-const currentPage = ref(1)
-const pagination = ref(null)
-const isBarcodeMode = ref(false)
+// Auth
+const { user, isAuthenticated, initializeAuth } = useAuth()
+const authState = computed(() => ({
+  user: user.value,
+  isAuthenticated: isAuthenticated.value,
+}))
 
+onMounted(() => {
+  initializeAuth()
+})
 
-
-// Statistiques calculées
-const stats = computed(() => [
+// Fonctionnalités
+const features = ref([
   {
-    label: 'Codes Créés',
-    value: qrCodes.value.length + barcodes.value.length,
-    icon: 'fa-qrcode'
+    title: 'Génération rapide',
+    description: 'Créez vos codes QR et codes-barres en quelques clics avec une interface intuitive.',
+    icon: 'fa-bolt'
   },
   {
-    label: 'Types Produits',
-    value: new Set([...qrCodes.value.map(qr => qr.typeProduit), ...barcodes.value.map(bc => bc.categorie)]).size,
-    icon: 'fa-tag'
+    title: 'Gestion organisée',
+    description: 'Organisez et gérez tous vos codes dans une interface claire et structurée.',
+    icon: 'fa-folder-open'
   },
   {
-    label: 'Valeur Totale',
-    value: `${(qrCodes.value.reduce((sum, qr) => sum + (qr.prixVente || 0), 0) + barcodes.value.reduce((sum, bc) => sum + (bc.prixVente || 0), 0)).toLocaleString()} FCFA`,
-    icon: 'fa-dollar-sign'
+    title: 'Sécurité renforcée',
+    description: 'Authentification 2FA et système de rôles pour une sécurité maximale.',
+    icon: 'fa-shield-halved'
+  },
+  {
+    title: 'Export facile',
+    description: 'Exportez vos codes en différents formats pour une utilisation flexible.',
+    icon: 'fa-download'
+  },
+  {
+    title: 'Statistiques détaillées',
+    description: 'Suivez l\'utilisation de vos codes avec des statistiques complètes.',
+    icon: 'fa-chart-bar'
+  },
+  {
+    title: 'Interface responsive',
+    description: 'Accédez à votre dashboard depuis n\'importe quel appareil.',
+    icon: 'fa-mobile-screen-button'
   }
 ])
 
-// Fonctions
-const fetchQrCodes = async (page = 1) => {
-  try {
-    loading.value = true
-    const response = await $fetch(`/api/qrcodes?page=${page}&limit=5`)
-    qrCodes.value = response.qrCodes || []
-    pagination.value = response.pagination
-    currentPage.value = page
-  } catch (error) {
-    console.error('Erreur lors du chargement des QR codes:', error)
-  } finally {
-    loading.value = false
+// Navigation
+const router = useRouter()
+
+const navigateToLogin = () => {
+  router.push('/auth')
+}
+
+const navigateToDashboard = () => {
+  router.push('/admin')
+}
+
+const scrollToFeatures = () => {
+  const featuresSection = document.getElementById('features')
+  if (featuresSection) {
+    featuresSection.scrollIntoView({ behavior: 'smooth' })
   }
 }
-
-const fetchBarcodes = async (page = 1) => {
-  try {
-    loading.value = true
-    const response = await $fetch(`/api/barcodes?page=${page}&limit=5`)
-    barcodes.value = response.barcodes || []
-    pagination.value = response.pagination
-    currentPage.value = page
-  } catch (error) {
-    console.error('Erreur lors du chargement des codes-barres:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleQrCreated = (_newQrCode) => {
-  // Recharger la première page après création
-  fetchQrCodes(1)
-  
-  // Notification simple (remplace useToast)
-  showNotification('QR Code créé avec succès !', 'success')
-}
-
-const handleQrUpdated = (_updatedQrCode) => {
-  // Recharger la page courante après modification
-  fetchQrCodes(currentPage.value)
-  
-  // Sortir du mode édition
-  exitEditMode()
-  
-  // Notification simple
-  showNotification('QR Code modifié avec succès !', 'success')
-}
-
-const handleBarcodeCreated = (_newBarcode) => {
-  // Recharger la première page après création
-  fetchBarcodes(1)
-  
-  // Notification simple
-  showNotification('Code-barre créé avec succès !', 'success')
-}
-
-const handleBarcodeUpdated = (_updatedBarcode) => {
-  // Recharger la page courante après modification
-  fetchBarcodes(currentPage.value)
-  
-  // Sortir du mode édition
-  exitEditMode()
-  
-  // Notification simple
-  showNotification('Code-barre modifié avec succès !', 'success')
-}
-
-const handleEditQrCode = (qrCode) => {
-  qrCodeToEdit.value = qrCode
-  barcodeToEdit.value = null
-  isBarcodeMode.value = false
-  editMode.value = true
-}
-
-const handleEditBarcode = (barcode) => {
-  barcodeToEdit.value = barcode
-  qrCodeToEdit.value = null
-  isBarcodeMode.value = true
-  editMode.value = true
-}
-
-const exitEditMode = () => {
-  editMode.value = false
-  qrCodeToEdit.value = null
-  barcodeToEdit.value = null
-}
-
-const handleChangePage = (page) => {
-  if (isBarcodeMode.value) {
-    fetchBarcodes(page)
-  } else {
-    fetchQrCodes(page)
-  }
-}
-
-const handleModeChanged = (isBarcode) => {
-  isBarcodeMode.value = isBarcode
-  exitEditMode()
-}
-
-
-
-// Notification simple
-const showNotification = (message, type = 'info') => {
-  const notification = document.createElement('div')
-  notification.className = `notification notification--${type}`
-  notification.textContent = message
-  document.body.appendChild(notification)
-  
-  setTimeout(() => {
-    notification.remove()
-  }, 3000)
-}
-
-// Lifecycle
-onMounted(() => {
-  fetchQrCodes()
-  fetchBarcodes()
-})
 
 // SEO
 useHead({
-  title: 'Générateur QR - Interface Épurée 2025',
+  title: 'QR-Add - Générateur de Codes QR et Codes-barres',
   meta: [
     { 
       name: 'description', 
-      content: 'Générateur de codes QR avec interface minimaliste noir et blanc' 
+      content: 'Générateur moderne de codes QR et codes-barres avec interface intuitive et sécurité renforcée' 
     }
   ]
 })
 </script>
 
 <style scoped>
-/* ===== PAGE LAYOUT ===== */
-.page {
-  min-height: calc(100vh - 8rem);
+/* ===== FONTS ===== */
+@font-face {
+  font-family: 'MonumentExtended';
+  src: url('/MonumentExtended-Ultrabold.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
 }
 
-/* ===== PAGE HEADER ===== */
-.page-header {
+/* ===== LANDING PAGE ===== */
+.landing-page {
+  min-height: 100vh;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  padding: var(--space-16) 0;
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .hero__content {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hero__title {
+  font-family: 'MonumentExtended', sans-serif;
+  font-size: 6rem;
+  font-weight: 900;
+  color: var(--color-secondary);
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--space-6);
+  letter-spacing: -0.025em;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .hero__title {
+    font-size: var(--font-size-5xl);
+    font-family: 'MonumentExtended', sans-serif;
+    font-weight: 900;
+  }
+}
+
+.text-highlight {
+  color: var(--color-secondary);
+  position: relative;
+}
+
+.text-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-secondary);
+  border-radius: var(--border-radius);
+}
+
+.hero__description {
+  font-size: var(--font-size-lg);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-8);
+  position: relative;
+  z-index: 1;
+}
+
+.hero__actions {
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .hero__actions {
+    flex-direction: row;
+  }
+}
+
+.hero__visual {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: var(--space-6);
+  position: relative;
+  z-index: 1;
+}
+
+.qr-demo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+}
+
+.qr-demo__image {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-xl);
+  
+  transition: transform var(--transition-normal);
+}
+
+.qr-demo__image:hover {
+  transform: scale(1.02);
+}
+
+/* ===== FEATURES SECTION ===== */
+.features {
+  padding: var(--space-16) 0;
+  background-color: var(--color-light);
+}
+
+.section-header {
+  text-align: center;
   margin-bottom: var(--space-12);
 }
 
-.page-header__content {
-  text-align: center;
+.section-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-4);
 }
 
-.page-header__content {
+.section-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-muted);
   max-width: 600px;
   margin: 0 auto;
 }
 
-.page-header__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background-color: var(--color-secondary);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius-xl);
-  font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  margin-bottom: var(--space-6);
-}
-
-.page-header__title {
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-  margin-bottom: var(--space-4);
-  line-height: var(--line-height-tight);
-  letter-spacing: -0.025em;
-}
-
-.page-header__description {
-  font-size: var(--font-size-lg);
-  color: var(--color-muted);
-  line-height: var(--line-height-relaxed);
-  margin: 0;
-}
-
-/* ===== MAIN LAYOUT ===== */
-.main-layout {
+.features-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-8);
-  margin-bottom: var(--space-16);
 }
 
-@media (min-width: 1024px) {
-  .main-layout {
-    grid-template-columns: 2fr 1fr;
-  }
-}
-
-.main-layout__form,
-.main-layout__list {
-  height: fit-content;
-}
-
-@media (min-width: 1024px) {
-  .main-layout__list {
-    position: sticky;
-    top: calc(4rem + var(--space-8));
-  }
-}
-
-/* ===== CARD ===== */
-.card {
+.feature-card {
   background-color: var(--color-secondary);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius-lg);
-  overflow: hidden;
+  padding: var(--space-8);
+  text-align: center;
   transition: all var(--transition-normal);
 }
 
-.card--elevated {
-  box-shadow: var(--shadow-md);
-}
-
-.card--elevated:hover {
+.feature-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
 }
 
-.card__header {
-  padding: var(--space-6);
-  border-bottom: var(--border-width) solid var(--color-border);
-  background-color: var(--color-light);
+.feature-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  border-radius: var(--border-radius-lg);
+  margin: 0 auto var(--space-6) auto;
+  font-size: var(--font-size-xl);
 }
 
-.card__body {
-  padding: var(--space-6);
-}
-
-.card__title {
+.feature-card__title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
-  margin: 0 0 var(--space-1) 0;
+  margin-bottom: var(--space-3);
 }
 
-.card__subtitle {
-  font-size: var(--font-size-sm);
+.feature-card__description {
   color: var(--color-muted);
-  margin: 0;
+  line-height: var(--line-height-relaxed);
 }
 
-/* ===== CARD HEADER ===== */
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.card-header__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
+/* ===== CTA SECTION ===== */
+.cta {
+  padding: var(--space-16) 0;
   background-color: var(--color-primary);
   color: var(--color-secondary);
-  border-radius: var(--border-radius-lg);
+  position: relative;
+  overflow: hidden;
 }
 
-.card-header__text {
-  flex: 1;
+.cta__content {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
-/* ===== STATS SECTION ===== */
-.stats-section {
-  margin-top: var(--space-16);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--space-6);
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background-color: var(--color-secondary);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius-lg);
-  transition: all var(--transition-normal);
-  cursor: pointer;
-}
-
-.stat-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.stat-card__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  background-color: var(--color-light);
-  border-radius: var(--border-radius);
-  color: var(--color-primary);
-}
-
-.stat-card__value {
-  font-size: var(--font-size-2xl);
+.cta__title {
+  font-size: var(--font-size-3xl);
   font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-  line-height: 1;
-}
-
-.stat-card__label {
-  font-size: var(--font-size-sm);
-  color: var(--color-muted);
-  margin-top: var(--space-1);
-}
-
-/* ===== NOTIFICATIONS ===== */
-.notification {
-  position: fixed;
-  top: var(--space-6);
-  right: var(--space-6);
-  padding: var(--space-4) var(--space-6);
-  background-color: var(--color-primary);
   color: var(--color-secondary);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
-  z-index: var(--z-tooltip);
-  animation: slideIn 0.3s ease-out;
+  margin-bottom: var(--space-4);
 }
 
-.notification--success {
-  background-color: var(--color-success);
+.cta__description {
+  font-size: var(--font-size-lg);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--space-8);
 }
 
-.notification--error {
-  background-color: var(--color-error);
+/* ===== CTA DÉCORATIONS ===== */
+.cta__decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.cta__qr-code {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
 }
 
-/* ===== EDIT MODE ACTIONS ===== */
-.edit-mode-actions {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: var(--border-width) solid var(--color-border);
+.cta__barcode {
+  position: absolute;
+  bottom: 20%;
+  right: 10%;
+  font-size: 2.5rem;
+  color: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite reverse;
 }
 
+.cta__dots {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cta__dots span {
+  width: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.cta__dots span:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.cta__dots span:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -532,20 +504,56 @@ useHead({
   min-height: 44px;
 }
 
+.btn--primary {
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  border: var(--border-width) solid var(--color-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--cta {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+  border: var(--border-width) solid var(--color-accent);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.btn--cta:hover:not(:disabled) {
+  background-color: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
 .btn--outline {
   background-color: transparent;
-  color: var(--color-primary);
-  border-color: var(--color-border);
+  color: var(--color-secondary);
+  border: var(--border-width) solid var(--color-secondary);
 }
 
 .btn--outline:hover {
-  background-color: var(--color-light);
-  border-color: var(--color-primary);
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.btn--block {
-  width: 100%;
+.btn--large {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-lg);
+  min-height: 56px;
 }
 
 .btn-icon {
@@ -554,20 +562,25 @@ useHead({
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {
-  .page-header__title {
+  .hero__title {
     font-size: var(--font-size-3xl);
   }
   
-  .page-header__description {
+  .hero__description {
     font-size: var(--font-size-base);
   }
   
-  .main-layout {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .qr-demo {
+    flex-direction: column;
     gap: var(--space-6);
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .hero__actions {
+    flex-direction: column;
   }
 }
 </style>

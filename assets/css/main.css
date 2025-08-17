@@ -1,18 +1,27 @@
-/* app/assets/css/main.css */
+/* ===== IMPORTS ===== */
+
+@import './base/reset.css';
+@import './base/typography.css';
+@import './base/variables.css';
+@import './components/buttons.css';
+@import './components/cards.css';
+@import './components/forms.css';
+@import './layouts/grid.css';
+@import './global.css';
+
 /* ===== GÉNÉRATEUR QR - DESIGN ÉPURÉ 2025 ===== */
 
 /* Base */
-@import './base/variables.css';
-@import './base/reset.css';
-@import './base/typography.css';
+/* Normalisation globale des fontes pour les accents (UTF-8 / latin étendu) */
+html, body, button, input, textarea {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 /* Components */
-@import './components/buttons.css';
-@import './components/forms.css';
-@import './components/cards.css';
 
 /* Layouts */
-@import './layouts/grid.css';
 
 /* ===== UTILITAIRES ADDITIONNELS ===== */
 /* Marges et espacement */

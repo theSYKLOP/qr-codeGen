@@ -64,4 +64,6 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+  /* Pile de polices globale pour un rendu correct des accents */
+  --font-stack: 'Segoe UI', 'Noto Sans', Arial, system-ui, -apple-system, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 } 

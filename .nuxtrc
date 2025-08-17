@@ -1,0 +1,32 @@
+# Configuration Nuxt pour les performances
+# Optimisations de développement et de production
+
+# Optimisations de build
+build.analyze = false
+build.transpile = ["@nuxt/ui"]
+
+# Optimisations de développement
+devtools.enabled = false
+
+# Optimisations de rendu
+experimental.payloadExtraction = false
+experimental.renderJsonPayloads = true
+
+# Optimisations de cache
+nitro.compressPublicAssets = true
+nitro.minify = true
+
+# Optimisations de compression
+compression.gzip = true
+compression.brotli = true
+
+# Optimisations de PWA
+pwa.registerType = "autoUpdate"
+pwa.workbox.navigateFallback = "/"
+
+# Optimisations de runtime
+runtimeConfig.public.apiBase = "http://localhost:3000"
+
+# Optimisations de TypeScript
+typescript.strict = true
+typescript.typeCheck = false 
